@@ -43,16 +43,7 @@
         </a>
     </header>
     <div class="main-panel">
-        <span class="portal-name">ONLYOFFICE™ Integration Edition – Welcome!</span>
-        <br />
-        <br />
-        <span class="portal-descr">This interactive example demonstrates a way to integrate ONLYOFFICE™ collaborative online document editing into your Web Application. Our editors are fully implemented in HTML5! You may upload your own documents for testing, using the "Upload file" button and uploading local Office files from your computer. You can upload the documents with the most popular file formats, such as .DOCX, .XLSX, .PPTX, etc.</span>
-        <ul class="features-list">
-            <li>Open, Edit and Save existing documents for in-browser editing using ONLYOFFICE™ Server documents.</li>
-            <li>Collaborative co-editing functions – chat, comments and other multi-user features.</li>
-            <li>Use of Auto-save function.</li>
-            <li>All editing operations are processed on this virtual machine. Your documents stay under your complete control.</li>
-        </ul>
+
         <table class="user-block-table" cellspacing="0" cellpadding="0">
             <tr>
                 <td valign="middle" width="30%">
@@ -89,11 +80,6 @@
         <label class="save-original">
             <input type="checkbox" id="checkOriginalFormat" class="checkbox" />Save document in original format
         </label>
-        <span class="question"></span>
-        <br />
-        <br />
-        <br />
-        <span class="try-descr">Or, you can view and edit sample documents –click on one of the links below.</span>
 
         <ul class="try-editor-list">
             <li>
@@ -212,30 +198,11 @@
             </div>
         </div>
         <% } %>
-        <br />
-        <br />
-        <br />
-        <div class="help-block">
-            <span>Want to learn the magic?</span>
-            <br />
-            Explore ONLYOFFICE™ Integration Edition <a href="http://api.onlyoffice.com/editors/howitworks" target="_blank">API Documentation.</a>
-        </div>
-        <br />
-        <div class="help-block">
-            <span>Warning</span>
-            <br />
-            This is a test example used for demonstration purposes only and it can be accessed by anyone. Once you finish examining it, we recommend that you disable this example for security reasons. This is done running the following commands:
-            <pre>
-sudo docker exec $(sudo docker ps -q) sudo supervisorctl stop onlyoffice-documentserver:example
 
-sudo docker exec $(sudo docker ps -q) sudo sed 's,autostart=true,autostart=false,' -i /etc/supervisor/conf.d/onlyoffice-documentserver-example.conf
-</pre>
-        </div>
-        <div class="help-block">
-            <span>Any questions?</span>
-            <br />
-            Please, <a href="mailto:sales@onlyoffice.com">submit your request here</a>.
-        </div>
+        
+        <br />
+        
+
     </div>
 
     <div id="hint">
@@ -274,8 +241,6 @@ sudo docker exec $(sudo docker ps -q) sudo sed 's,autostart=true,autostart=false
     </div>
 
     <span id="loadScripts" data-docs="<%= preloaderUrl %>"></span>
-
-    <footer>&copy; Ascensio Systems Inc 2016. All rights reserved.</footer>
 
     <script type="text/javascript" src="javascripts/jquery-1.8.2.js"></script>
     <script type="text/javascript" src="javascripts/jquery-ui.js"></script>
