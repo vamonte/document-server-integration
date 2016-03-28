@@ -218,15 +218,17 @@ label .checkbox {
 
 .file-upload {
     cursor: pointer;
-    margin-bottom: 8px;
     padding: 0 !important;
     overflow: hidden;
     position: relative;
+	
+	display: block;
+    text-decoration: none;
+    color: #444;
+    font-size: 14px;
 }
 .file-upload span {
-    font-weight: bold;
     line-height: 42px;
-    margin: 2px 50px;
 }
 .file-upload input {
     cursor: pointer;

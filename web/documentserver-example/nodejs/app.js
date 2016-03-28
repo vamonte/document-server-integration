@@ -349,7 +349,7 @@ app.get("/editor", function (req, res) {
         var lastname = req.query.lastname ? req.query.lastname : "Smith";
 
         if (fileExt != null) {
-            var fileName = docManager.createDemo((req.query.create ? "new." : "sample.") + fileExt, userid, firstname + " " + lastname);
+            var fileName = docManager.createDemo("new." + fileExt, userid, firstname + " " + lastname);
 
             var redirectPath = docManager.getProtocol() + "://" + docManager.req.get("host") + "/editor?fileName=" + encodeURIComponent(fileName) + docManager.getCustomParams();
             res.redirect(redirectPath);
