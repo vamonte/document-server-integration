@@ -230,12 +230,32 @@ docManager.getStoredFiles = function () {
     var result = [];
     var storedFiles = fileSystem.readdirSync(directory);
     for (var i = 0; i < storedFiles.length; i++) {
-        if (!fileSystem.lstatSync(path.join(directory, storedFiles[i])).isDirectory()) {
-            result.push({
-                name: storedFiles[i],
-                url: docManager.getlocalFileUri(storedFiles[i]),
-                documentType: fileUtility.getFileType(storedFiles[i])
-            });
+		stats = fileSystem.lstatSync(path.join(directory, storedFiles[i]));
+		var time = stats.mtime.getTime();
+        if (!stats.isDirectory()) {
+
+			if (result.length <= 0){
+				result.push({
+					time: stats.mtime.getTime(),
+					name: storedFiles[i],
+					url: docManager.getlocalFileUri(storedFiles[i]),
+					documentType: fileUtility.getFileType(storedFiles[i])
+				});				
+			}
+			else {
+				var j;				
+				for (j = 0; j < result.length; j++){
+					if (time > result[j].time){
+						break;
+					}
+				}	
+				result.splice(j, 0, {
+					time: stats.mtime.getTime(),
+					name: storedFiles[i],
+					url: docManager.getlocalFileUri(storedFiles[i]),
+					documentType: fileUtility.getFileType(storedFiles[i])
+				});
+			}			
         }
     }
     return result;
