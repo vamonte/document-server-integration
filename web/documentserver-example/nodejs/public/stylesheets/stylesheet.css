@@ -74,36 +74,8 @@ header img {
     margin-bottom: 20px;
     width: 600px;
 }
-pre
-{
-    border: 1px solid #CCC;
-    background-color: #fff;
-    border-radius: 3px;
-    display: block;
-    font-family: Monaco,Andale Mono,Courier New,monospace;
-    font-size: 12px;
-    line-height: 18px;
-    margin: 18px 0 24px;
-    padding: 8px;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-pre.hljs {
-    padding-left: 35px;
-}
-.features-list {
-    padding-left: 16px;
-    list-style: outside none disc;
-    line-height: 20px;
-    margin-bottom: 20px;
-    margin-top: 0px;
-}
 .save-original {
-    color: #929597;
-    line-height: 20px;
-    margin-left: 16px;
-    white-space: nowrap;
-    width: 272px;
+    margin-left: 30px;
 }
 label .checkbox {
     margin: 0 5px 3px 0;
@@ -143,13 +115,13 @@ label .checkbox {
 
 .try-editor-list {
     list-style: none;
-    margin: 0;
+    margin: 0 0 16px;
     padding: 0;
 }
 .try-editor-list li {
     float: left;
-    margin: 25px;
-    width: 150px;
+    margin: 0 15px;
+    width: 100px;
 }
 .try-editor {
     background-color: transparent;
@@ -172,7 +144,9 @@ label .checkbox {
 .try-editor.presentation {
     background-image: url("../images/file_pptx.png");
 }
-
+.create-sample {
+    margin-left: 75px;
+}
 .button, .button:visited, .button:hover, .button:active {
     display: inline-block;
     font-weight: normal;
@@ -216,6 +190,11 @@ label .checkbox {
     color: #333;
 }
 
+.upload-panel {
+    border-right: 1px solid #D1D1D1;
+    float: left;
+    margin-right: 25px;
+}
 .file-upload {
     cursor: pointer;
     padding: 0 !important;
@@ -238,6 +217,13 @@ label .checkbox {
     right: 0;
     top: 0;
     transform: translate(-300px, 0) scale(4);
+}
+.create-panel {
+    float: left;
+}
+.upload-panel,
+.create-panel {
+    padding: 10px 0;
 }
 
 #mainProgress {
@@ -436,6 +422,7 @@ footer {
     cursor: default;
     font-family: 'Open Sans', sans-serif;
     font-size: 13px;
+    height: 40px;
     -khtml-user-select: none;
     user-select: none;
     -moz-user-select: none;
@@ -449,7 +436,7 @@ footer {
     text-align: left;
 }
 .contentCells {
-    padding: 2px 1px 2px 5px;
+    padding: 4px 1px 4px 5px;
     font-family: 'Open Sans', sans-serif;
     font-size: 16px;
     border-bottom: 1px solid #e5e5e5;

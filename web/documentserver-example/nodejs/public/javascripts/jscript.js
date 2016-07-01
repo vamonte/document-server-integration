@@ -114,7 +114,7 @@ if (typeof jQuery != "undefined") {
 
     jq(document).on("click", "#beginEmbedded:not(.disable)", function () {
         var fileId = encodeURIComponent(jq('#hiddenFileName').val());
-        var url = UrlEditor + "?mode=embedded&fileName=" + fileId + "&lang=" + language + "&userid=" + userid + "&firstname=" +firstname +"&lastname=" + lastname;
+        var url = UrlEditor + "?type=embedded&fileName=" + fileId + "&lang=" + language + "&userid=" + userid + "&firstname=" +firstname +"&lastname=" + lastname;
 
         jq("#mainProgress").addClass("embedded");
         jq("#beginEmbedded").addClass("disable");
@@ -153,6 +153,18 @@ if (typeof jQuery != "undefined") {
             complete: function (data) {
                 document.location.reload();
             }
+        });
+    });
+
+    jq("#createSample").click(function () {
+        jq(".try-editor").each(function () {
+            var href = jq(this).attr("href");
+            if (jq("#createSample").is(":checked")) {
+                href += "&sample=true";
+            } else {
+                href = href.replace("&sample=true", "");
+            }
+            jq(this).attr("href", href);
         });
     });
 

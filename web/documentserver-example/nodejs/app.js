@@ -179,7 +179,7 @@ app.get("/convert", function (req, res) {
 
         response.write(JSON.stringify(result));
         response.end();
-    }
+    };
 
     var callback = function (err, data) {
         if (err) {
@@ -192,12 +192,12 @@ app.get("/convert", function (req, res) {
         }
 
         try {
-            var responseUri = documentService.getResponseUri(data.toString())
+            var responseUri = documentService.getResponseUri(data.toString());
             var result = responseUri.key;
             var newFileUri = responseUri.value;
 
             if (result != 100) {
-                writeResult(fileName, result, null)
+                writeResult(fileName, result, null);
                 return;
             }
 
@@ -208,23 +208,30 @@ app.get("/convert", function (req, res) {
 
             fileSystem.unlinkSync(docManager.storagePath(fileName));
 
-            writeResult(correctName, null, null)
-        } catch (ex) {
-            writeResult(null, null, ex.message)
+            var userAddress = docManager.curUserHostAddress();
+            var historyPath = docManager.historyPath(fileName, userAddress, true);
+            var correctHistoryPath = docManager.historyPath(correctName, userAddress, true);
+
+            fileSystem.renameSync(historyPath, correctHistoryPath);
+
+            fileSystem.renameSync(path.join(correctHistoryPath, fileName + ".txt"), path.join(correctHistoryPath, correctName + ".txt"));
+
+            writeResult(correctName, null, null);
+        } catch (e) {
+            writeResult(null, null, e.message);
         }
-    }
+    };
 
     try {
         if (configServer.get('convertedDocs').indexOf(fileExt) != -1) {
             var key = documentService.generateRevisionId(fileUri);
-            var res = documentService.getConvertedUriAsync(fileUri, fileExt, internalFileExt, key, callback);
+            documentService.getConvertedUriAsync(fileUri, fileExt, internalFileExt, key, callback);
         } else {
-            writeResult(fileName, null, null)
+            writeResult(fileName, null, null);
         }
     } catch (ex) {
-        writeResult(null, null, ex.message)
+        writeResult(null, null, ex.message);
     }
-
 });
 
 app.delete("/file", function (req, res) {
@@ -384,7 +391,7 @@ app.get("/editor", function (req, res) {
         var lastname = req.query.lastname ? req.query.lastname : "Smith";
 
         if (fileExt != null) {
-            var fileName = docManager.createDemo("new." + fileExt, userid, firstname + " " + lastname);
+            var fileName = docManager.createDemo((req.query.sample ? "sample." : "new.") + fileExt, userid, firstname + " " + lastname);
 
             var redirectPath = docManager.getProtocol() + "://" + docManager.req.get("host") + "/editor?fileName=" + encodeURIComponent(fileName) + docManager.getCustomParams();
             res.redirect(redirectPath);
@@ -392,42 +399,45 @@ app.get("/editor", function (req, res) {
         }
 
         var userAddress = docManager.curUserHostAddress();
-        var fileName = req.query.fileName;
+        fileName = req.query.fileName;
         var key = docManager.getKey(fileName);
         var url = docManager.getFileUri(fileName);
         var mode = req.query.mode || "edit"; //mode: view/edit 
         var type = req.query.type || "desktop"; //type: embedded/mobile/desktop
         var canEdit = configServer.get('editedDocs').indexOf(fileUtility.getFileExtension(fileName)) != -1;
 
-        var historyPath = docManager.historyPath(fileName, userAddress);
         var countVersion = 1;
+
+        if (configServer.get('haveExternalIp')) {
+        var historyPath = docManager.historyPath(fileName, userAddress);
         changes = null;
 
         if (historyPath != '') {
 
             countVersion = docManager.countVersion(historyPath) + 1;
-            var prev_path = docManager.getlocalFileUri(fileName, 1) + "/prev" + fileUtility.getFileExtension(fileName);
-            var diff_path = null;
+                var prevPath = docManager.getlocalFileUri(fileName, 1) + "/prev" + fileUtility.getFileExtension(fileName);
+                var diffPath = null;
             for (var i = 1; i < countVersion; i++) {
                 var keyPath = docManager.keyPath(fileName, userAddress, i);
                 var keyVersion = "" + fileSystem.readFileSync(keyPath);
                 history.push(docManager.getHistory(fileName, changes, keyVersion, i));
 
-                prevUrl.push(prev_path);
-                prev_path = docManager.getlocalFileUri(fileName, i) + "/prev" + fileUtility.getFileExtension(fileName);
+                    prevUrl.push(prevPath);
+                    prevPath = docManager.getlocalFileUri(fileName, i) + "/prev" + fileUtility.getFileExtension(fileName);
 
-                diff.push(diff_path);
-                diff_path = docManager.getlocalFileUri(fileName, i) + "/diff.zip";
+                    diff.push(diffPath);
+                    diffPath = docManager.getlocalFileUri(fileName, i) + "/diff.zip";
 
                 var changesFile = docManager.changesPath(fileName, userAddress, i);
                 var changes = docManager.getChanges(changesFile);
             }
-            prevUrl.push(prev_path);
-            diff.push(diff_path);
+                prevUrl.push(prevPath);
+                diff.push(diffPath);
         } else {
-            prevUrl.push(url)
+                prevUrl.push(url);
         }
         history.push(docManager.getHistory(fileName, changes, key, countVersion));
+        }
 
         var argss = {
             apiUrl: siteUrl + configServer.get('apiUrl'),
@@ -435,7 +445,7 @@ app.get("/editor", function (req, res) {
                 name: fileName,
                 ext: fileUtility.getFileExtension(fileName, true),
                 uri: url,
-                version: countVersion
+                version: countVersion,
             },
             editor: {
                 type: type,
@@ -450,17 +460,16 @@ app.get("/editor", function (req, res) {
                 lang: lang,
                 userid: userid,
                 firstname: firstname,
-                lastname: lastname
+                lastname: lastname,
             },
             history: history,
             setHistoryData: {
-                url: prevUrl || "", //из файла прочитать ссылки
-                urlDiff: diff || ""
-            }
+                url: prevUrl,
+                urlDiff: diff,
+            },
         };
 
         res.render("editor", argss);
-
     }
     catch (ex) {
         res.status(500);
