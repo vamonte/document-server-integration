@@ -25,12 +25,12 @@
     "storageFolder": "files",
     "haveExternalIp": false,
     "maxFileSize": 1073741824,
-//    "fileChoiceUrl": "https://testinfo.teamlab.info/products/files/filechoice.aspx?fileType=xlsx&mailmerge=true"
+    "fileChoiceUrl": "https://testinfo.teamlab.info/products/files/filechoice.aspx?fileType=xlsx&mailmerge=true"
   },
   "plugins": {
     "url": "../../../../sdkjs-plugins/",
     "pluginsData": [
-      /*{
+      {
         "name": "chess (fen)",
         "guid": "asc.{FFE1F462-1EA2-4391-990D-4CC84940B754}",
         "variations": [
@@ -332,7 +332,7 @@
             ]
           }
         ]
-      }*/
+      }
     ]
   }
 }
