@@ -44,7 +44,6 @@
             "isViewer": true,
             "EditorsSupport": [
               "word",
-              "cell",
               "slide"
             ],
             "isVisual": true,
@@ -74,7 +73,6 @@
             "isViewer": true,
             "EditorsSupport": [
               "word",
-              "cell",
               "slide"
             ],
             "isVisual": true,
@@ -106,7 +104,6 @@
             "isViewer": true,
             "EditorsSupport": [
               "word",
-              "cell",
               "slide"
             ],
             "isVisual": true,
@@ -138,7 +135,6 @@
             "isViewer": false,
             "EditorsSupport": [
               "word",
-              "cell",
               "slide"
             ],
             "isVisual": false,
@@ -165,7 +161,6 @@
             "isViewer": true,
             "EditorsSupport": [
               "word",
-              "cell",
               "slide"
             ],
             "isVisual": false,
@@ -192,7 +187,6 @@
             "isViewer": true,
             "EditorsSupport": [
               "word",
-              "cell",
               "slide"
             ],
             "isVisual": true,
@@ -227,9 +221,7 @@
             ],
             "isViewer": false,
             "EditorsSupport": [
-              "word",
-              "cell",
-              "slide"
+              "cell"
             ],
             "isVisual": false,
             "isModal": false,
@@ -290,7 +282,6 @@
             "isViewer": false,
             "EditorsSupport": [
               "word",
-              "cell",
               "slide"
             ],
             "isVisual": false,
