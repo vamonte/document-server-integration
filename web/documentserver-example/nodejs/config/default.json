@@ -201,7 +201,7 @@
               },
               {
                 "text": "Cancel",
-                "primary": "false"
+                "primary": false
               }
             ],
 			
@@ -265,7 +265,7 @@
               },
               {
                 "text": "Cancel",
-                "primary": "false"
+                "primary": false
               }
             ]
           }
