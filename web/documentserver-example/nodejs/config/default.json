@@ -203,7 +203,11 @@
                 "text": "Cancel",
                 "primary": "false"
               }
-            ]
+            ],
+			
+			"size" : [350, 90],
+            "maximumSize" : [],
+            "minimumSize" : []
           }
         ]
       },
