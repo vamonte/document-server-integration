@@ -63,7 +63,7 @@
             ]
           },
           {
-            "description": "about",
+            "description": "About",
             "url": "chess/index_about.html",
             "icons": [
               "chess/icon.png",
