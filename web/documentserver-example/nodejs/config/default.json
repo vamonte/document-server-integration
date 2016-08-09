@@ -341,7 +341,33 @@
                 "primary": true
               }
             ]
-          }
+          },
+			{
+				"description" : "About",
+				"url"         : "clipart/index_about.html",
+
+				"icons"           : ["clipart/icon.png", "clipart/icon@2x.png"],
+				"isViewer"        : false,
+				"EditorsSupport"  : ["word", "slide"],
+
+				"isVisual"        : true,
+				"isModal"         : true,
+				"isInsideMode"    : false,
+
+				"initDataType"    : "none",
+				"initData"        : "",
+
+				"isUpdateOleOnResize" : false,
+
+				"buttons"         : [
+					{
+						"text": "Ok",
+						"primary": true
+					}
+				],
+
+				"size" : [392, 147]
+			}
         ]
       },
 	  {
