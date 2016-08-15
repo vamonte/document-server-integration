@@ -327,7 +327,8 @@
             "isViewer": true,
             "EditorsSupport": [
               "word", 
-			  "slide"
+			  "slide",
+              "cell"
             ],
             "isVisual": true,
             "isModal": false,
@@ -348,7 +349,7 @@
 
 				"icons"           : ["clipart/icon.png", "clipart/icon@2x.png"],
 				"isViewer"        : false,
-				"EditorsSupport"  : ["word", "slide"],
+				"EditorsSupport"  : ["word", "slide", "cell"],
 
 				"isVisual"        : true,
 				"isModal"         : true,
