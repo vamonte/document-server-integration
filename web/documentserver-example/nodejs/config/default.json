@@ -29,6 +29,27 @@
   "plugins": {
     "url": "../../../../sdkjs-plugins/",
     "pluginsData": [
+	{
+    "name"       : "hello world",
+    "guid"       : "asc.{0616AE85-5DBE-4B6B-A0A9-455C4F1503AD}",
+    "baseUrl"    : "",
+    "variations" : [
+        {
+            "description"         : "hello world",
+            "url"                 : "helloworld/index.html",
+            "icons"               : ["helloworld/icon.png", "helloworld/icon@2x.png"],
+            "isViewer"            : false,
+            "EditorsSupport"      : ["word"],
+            "isVisual"            : false,
+            "isModal"             : true,
+            "isInsideMode"        : false,
+            "initDataType"        : "none",
+            "initData"            : "",
+            "isUpdateOleOnResize" : true,
+            "buttons"             : []
+        }
+    ]
+},
       {
         "name": "chess (fen)",
         "guid": "asc.{FFE1F462-1EA2-4391-990D-4CC84940B754}",
@@ -43,6 +64,7 @@
             "isViewer": true,
             "EditorsSupport": [
               "word",
+			  "cell",
               "slide"
             ],
             "isVisual": true,
@@ -72,6 +94,7 @@
             "isViewer": true,
             "EditorsSupport": [
               "word",
+			  "cell",
               "slide"
             ],
             "isVisual": true,
@@ -183,6 +206,7 @@
             "isViewer": true,
             "EditorsSupport": [
               "word",
+			  "cell",
               "slide"
             ],
             "isVisual": true,
