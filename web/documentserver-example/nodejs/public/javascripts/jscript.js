@@ -93,8 +93,99 @@ if (typeof jQuery != "undefined") {
     });
     
     var timer = null;
-	
-	jq(document).on("click", "#beginEdit:not(.disable)", function () {
+    var checkConvert = function () {
+        if (timer != null) {
+            clearTimeout(timer);
+        }
+
+        if (!jq("#mainProgress").is(":visible")) {
+            return;
+        }
+
+        var fileName = jq("#hiddenFileName").val();
+        var posExt = fileName.lastIndexOf('.');
+        posExt = 0 <= posExt ? fileName.substring(posExt).trim().toLowerCase() : '';
+
+        if (ConverExtList.indexOf(posExt) == -1) {
+            loadScripts();
+            return;
+        }
+
+        if (jq("#checkOriginalFormat").is(":checked")) {
+            loadScripts();
+            return;
+        }
+
+        timer = setTimeout(function () {
+            var requestAddress = UrlConverter + "?filename=" + encodeURIComponent(jq("#hiddenFileName").val());
+
+            jq.ajax({
+                async: true,
+                contentType: "text/xml",
+                type: "get",
+                url: requestAddress,
+                complete: function (data) {
+                    var responseText = data.responseText;
+                    try {
+                        var response = jq.parseJSON(responseText);
+                    } catch (e)	{
+                        response = { error: e };
+                    }
+                    if (response.error) {
+                        jq(".current").removeClass("current");
+                        jq(".step:not(.done)").addClass("error");
+                        jq("#mainProgress .error-message").show().find("span").text(response.error);
+                        jq('#hiddenFileName').val("");
+                        return;
+                    }
+
+                    jq("#hiddenFileName").val(response.filename);
+
+                    if (typeof response.step != "undefined" && response.step < 100) {
+                        checkConvert();
+                    } else {
+                        loadScripts();
+                    }
+                }
+            });
+        }, 1000);
+    };
+
+    var loadScripts = function () {
+        if (!jq("#mainProgress").is(":visible")) {
+            return;
+        }
+        jq("#step2").addClass("done").removeClass("current");
+        jq("#step3").addClass("current");
+
+        if (jq("#loadScripts").is(":empty")) {
+            var urlScripts = jq("#loadScripts").attr("data-docs");
+            var frame = '<iframe id="iframeScripts" width=1 height=1 style="position: absolute; visibility: hidden;" ></iframe>';
+            jq("#loadScripts").html(frame);
+            document.getElementById("iframeScripts").onload = onloadScripts;
+            jq("#loadScripts iframe").attr("src", urlScripts);
+        } else {
+            onloadScripts();
+        }
+    };
+
+    var onloadScripts = function () {
+        if (!jq("#mainProgress").is(":visible")) {
+            return;
+        }
+        jq("#step3").addClass("done").removeClass("current");
+        jq("#beginView, #beginEmbedded").removeClass("disable");
+
+        var fileName = jq("#hiddenFileName").val();
+        var posExt = fileName.lastIndexOf('.');
+        posExt = 0 <= posExt ? fileName.substring(posExt).trim().toLowerCase() : '';
+
+        if (EditedExtList.indexOf(posExt) != -1) {
+            jq("#beginEdit").removeClass("disable");
+        }
+    };
+
+    jq(document).on("click", "#beginEdit:not(.disable)", function () {
         var fileId = encodeURIComponent(jq('#hiddenFileName').val());
         var url = UrlEditor + "?fileName=" + fileId + "&lang=" + language + "&userid=" + userid + "&firstname=" +firstname +"&lastname=" + lastname;
         window.open(url, "_blank");
