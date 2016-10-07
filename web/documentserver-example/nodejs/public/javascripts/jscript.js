@@ -111,11 +111,6 @@ if (typeof jQuery != "undefined") {
             return;
         }
 
-        if (jq("#checkOriginalFormat").is(":checked")) {
-            loadScripts();
-            return;
-        }
-
         timer = setTimeout(function () {
             var requestAddress = UrlConverter + "?filename=" + encodeURIComponent(jq("#hiddenFileName").val());
 
@@ -257,11 +252,6 @@ if (typeof jQuery != "undefined") {
             }
             jq(this).attr("href", href);
         });
-    });
-
-    jq.dropdownToggle({
-        switcherSelector: ".question",
-        dropdownID: "hint"
     });
 }
 
