@@ -24,7 +24,13 @@
     "convertedDocs": [".doc", ".odt", ".xls", ".ods", ".ppt", ".pps", ".odp", ".rtf", ".mht", ".html", ".htm", ".epub"],
     "storageFolder": "files",
     "maxFileSize": 1073741824,
-    "fileChoiceUrl": "https://testinfo.teamlab.info/products/files/filechoice.aspx?fileType=xlsx&mailmerge=true"
+    "fileChoiceUrl": "https://testinfo.teamlab.info/products/files/filechoice.aspx?fileType=xlsx&mailmerge=true",
+    "static":[
+      {
+        "name": "/public",
+        "path": "public"
+      }
+    ]
   },
   "plugins": {
     "url": "../../../../sdkjs-plugins/",
