@@ -1,6 +1,6 @@
 ﻿/*
  *
- * (c) Copyright Ascensio System Limited 2010-2016
+ * (c) Copyright Ascensio System Limited 2010-2017
  *
  * This program is freeware. You can redistribute it and/or modify it under the terms of the GNU 
  * General Public License (GPL) version 3 as published by the Free Software Foundation (https://www.gnu.org/copyleft/gpl.html). 
@@ -25,7 +25,6 @@
 
 var path = require("path");
 var urllib = require("urllib");
-var syncRequest = require("sync-request");
 var xml2js = require("xml2js");
 var fileUtility = require("./fileUtility");
 var guidManager = require("./guidManager");
@@ -34,52 +33,71 @@ var siteUrl = configServer.get('siteUrl');
 
 var documentService = {};
 
-documentService.convertParams = "?url={0}&outputtype={1}&filetype={2}&title={3}&key={4}";
-documentService.commandParams = "?c={0}&key={1}";
 documentService.userIp = null;
 
-documentService.getConvertedUri = function (documentUri, fromExtension, toExtension, documentRevisionId) {
-    var xml = documentService.sendRequestToConvertService(documentUri, fromExtension, toExtension, documentRevisionId);
+documentService.getConvertedUriSync = function (documentUri, fromExtension, toExtension, documentRevisionId, callback) {
+    documentRevisionId = documentService.generateRevisionId(documentRevisionId || documentUri);
 
-    var res = documentService.getResponseUri(xml);
-
-    return res.value;
+    documentService.getConvertedUri(documentUri, fromExtension, toExtension, documentRevisionId, false, function (err, data) {
+        if (err) {
+            callback();
+            return;
+        }
+        var res = documentService.getResponseUri(data);
+        callback(res.value);
+    });
 };
 
-documentService.getConvertedUriAsync = function (documentUri, fromExtension, toExtension, documentRevisionId, callback) {
+documentService.getConvertedUri = function (documentUri, fromExtension, toExtension, documentRevisionId, async, callback) {
     fromExtension = fromExtension || fileUtility.getFileExtension(documentUri);
 
     var title = fileUtility.getFileName(documentUri) || guidManager.newGuid();
 
     documentRevisionId = documentService.generateRevisionId(documentRevisionId || documentUri);
 
-    var params = documentService.convertParams.format(
-    encodeURIComponent(documentUri),
-    toExtension.replace(".", ""),
-    fromExtension.replace(".", ""),
-    title,
-    documentRevisionId);
+    var params = {
+        async: async,
+        url: documentUri,
+        outputtype: toExtension.replace(".", ""),
+        filetype: fromExtension.replace(".", ""),
+        title: title,
+        key: documentRevisionId
+    };
 
-    urllib.request(siteUrl + configServer.get('converterUrl') + params, callback);
+    urllib.request(siteUrl + configServer.get('converterUrl'),
+        {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: params
+        },
+        callback);
 };
 
-documentService.getExternalUri = function (fileStream, contentLength, contentType, documentRevisionId) {
-    var params = documentService.convertParams.format("", "", "", "", documentRevisionId);
+documentService.getExternalUri = function (fileStream, contentLength, contentType, documentRevisionId, callback) {
+    documentRevisionId = documentService.generateRevisionId(documentRevisionId);
 
-    var urlTostorage = siteUrl + configServer.get('storageUrl') + params;
+    var urlTostorage = siteUrl + configServer.get('storageUrl') + "?key=" + documentRevisionId;
 
-    var response = syncRequest("POST", urlTostorage, {
-        headers: {
-            "Content-Type": contentType == null ? "application/octet-stream" : contentType,
-            "Content-Length": contentLength.toString(),
-            "charset": "utf-8"
+    urllib.request(urlTostorage,
+        {
+            method: "POST",
+            headers: {
+                "Content-Type": contentType == null ? "application/octet-stream" : contentType,
+                "Content-Length": contentLength.toString(),
+                "charset": "utf-8"
+            },
+            data: fileStream
         },
-        body: fileStream
-    });
-
-    var res = documentService.getResponseUri(response.body.toString());
-
-    return res.value;
+        function (err, data) {
+            if (err) {
+                callback();
+                return;
+            }
+            var res = documentService.getResponseUri(data);
+            callback(res.value);
+        });
 };
 
 documentService.generateRevisionId = function (expectedKey) {
@@ -90,24 +108,6 @@ documentService.generateRevisionId = function (expectedKey) {
     var key = expectedKey.replace(new RegExp("[^0-9-.a-zA-Z_=]", "g"), "_");
 
     return key.substring(0, Math.min(key.length, 20));
-};
-
-documentService.sendRequestToConvertService = function (documentUri, fromExtension, toExtension, documentRevisionId) {
-    fromExtension = fromExtension || fileUtility.getFileExtension(documentUri);
-
-    var title = fileUtility.getFileName(documentUri) || guidManager.newGuid();
-
-    documentRevisionId = documentService.generateRevisionId(documentRevisionId || documentUri);
-
-    var params = documentService.convertParams.format(
-    encodeURIComponent(documentUri),
-    toExtension.replace(".", ""),
-    fromExtension.replace(".", ""),
-    title,
-    documentRevisionId);
-
-    var res = syncRequest("GET", siteUrl + configServer.get('converterUrl') + params);
-    return res.getBody("utf8");
 };
 
 documentService.processConvertServiceResponceError = function (errorCode) {
@@ -200,14 +200,22 @@ documentService.convertXmlStringToJson = function (xml) {
     return res;
 };
 
-documentService.commandRequest = function (method, documentRevisionId) {
+documentService.commandRequest = function (method, documentRevisionId, callback) {
     documentRevisionId = documentService.generateRevisionId(documentRevisionId);
-    var params = documentService.commandParams.format(
-    method,
-    documentRevisionId);
+    var params = {
+        c: method,
+        key: documentRevisionId
+    };
 
-    var res = syncRequest("GET", siteUrl + configServer.get('commandUrl') + params).getBody("utf8");
-    return JSON.parse(res).error;
+    urllib.request(siteUrl + configServer.get('commandUrl'),
+        {
+            method: "POST",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            data: params
+        },
+        callback);
 };
 
 module.exports = documentService;

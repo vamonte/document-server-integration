@@ -1,6 +1,6 @@
 /*
  *
- * (c) Copyright Ascensio System Limited 2010-2016
+ * (c) Copyright Ascensio System Limited 2010-2017
  *
  * This program is freeware. You can redistribute it and/or modify it under the terms of the GNU 
  * General Public License (GPL) version 3 as published by the Free Software Foundation (https://www.gnu.org/copyleft/gpl.html). 
@@ -82,11 +82,8 @@ docManager.getCustomParams = function () {
     var userid = docManager.req.query.userid;
     params += (userid ? "&userid=" + userid : "");
 
-    var firstname = docManager.req.query.firstname;
-    params += (firstname ? "&firstname=" + firstname : "");
-
-    var lastname = docManager.req.query.lastname;
-    params += (lastname ? "&lastname=" + lastname : "");
+    var name = docManager.req.query.name;
+    params += (name ? "&name=" + name : "");
 
     var lang = docManager.req.query.lang;
     params += (lang ? "&lang=" + docManager.getLang() : "");

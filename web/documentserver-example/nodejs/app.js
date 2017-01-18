@@ -1,6 +1,6 @@
 ﻿/*
  *
- * (c) Copyright Ascensio System Limited 2010-2016
+ * (c) Copyright Ascensio System Limited 2010-2017
  *
  * This program is freeware. You can redistribute it and/or modify it under the terms of the GNU 
  * General Public License (GPL) version 3 as published by the Free Software Foundation (https://www.gnu.org/copyleft/gpl.html). 
@@ -155,10 +155,9 @@ app.post("/upload", function (req, res) {
                 res.write("{ \"filename\": \"" + file.name + "\"}");
 
                 var userid = req.query.userid ? req.query.userid : "uid-1";
-                var firstname = req.query.firstname ? req.query.firstname : "Jonn";
-                var lastname = req.query.lastname ? req.query.lastname : "Smith";
+                var name = req.query.name ? req.query.name : "Jonn Smith";
 
-                docManager.saveFileData(file.name, userid, firstname + " " + lastname);
+                docManager.saveFileData(file.name, userid, name);
             }
             res.end();
         });
@@ -235,7 +234,7 @@ app.get("/convert", function (req, res) {
     try {
         if (configServer.get('convertedDocs').indexOf(fileExt) != -1) {
             var key = documentService.generateRevisionId(fileUri);
-            documentService.getConvertedUriAsync(fileUri, fileExt, internalFileExt, key, callback);
+            documentService.getConvertedUri(fileUri, fileExt, internalFileExt, key, true, callback);
         } else {
             writeResult(fileName, null, null);
         }
@@ -291,9 +290,7 @@ app.post("/track", function (req, res) {
 
     var processTrack = function (response, body, fileName, userAddress) {
 
-        var processSave = function (body, fileName, userAddress, newVersion) {
-
-            var downloadUri = body.url;
+        var processSave = function (downloadUri, body, fileName, userAddress, resp, newVersion) {
             var curExt = fileUtility.getFileExtension(fileName);
             var downloadExt = fileUtility.getFileExtension(downloadUri);
 
@@ -301,7 +298,10 @@ app.post("/track", function (req, res) {
                 var key = documentService.generateRevisionId(downloadUri);
 
                 try {
-                    downloadUri = documentService.getConvertedUri(downloadUri, downloadExt, curExt, key);
+                    documentService.getConvertedUriSync(downloadUri, downloadExt, curExt, key, function(dUri){
+                        processSave(dUri, body, fileName, userAddress, resp, newVersion)
+                    });
+                    return;
                 } catch (ex) {
                     console.log(ex);
                     fileName = docManager.getCorrectName(fileUtility.getFileName(fileName, true) + downloadExt, userAddress)
@@ -349,6 +349,9 @@ app.post("/track", function (req, res) {
             } catch (ex) {
                 console.log(ex);
             }
+
+            response.write("{\"error\":0}");
+            response.end();
         }
 
         if (body.status == 1) { //Editing
@@ -363,14 +366,14 @@ app.post("/track", function (req, res) {
                     }
                 }
             }
-        } else if (body.status == 2 || body.status == 3) { //MustSave, Corrupted
-            processSave(body, fileName, userAddress, true);
-        } else if (body.status == 6 || body.status == 7) { //MustForceSave, CorruptedForceSave
-            processSave(body, fileName, userAddress);
-        }
 
-        response.write("{\"error\":0}");
-        response.end();
+            response.write("{\"error\":0}");
+            response.end();
+        } else if (body.status == 2 || body.status == 3) { //MustSave, Corrupted
+            processSave(body.url, body, fileName, userAddress, response, true);
+        } else if (body.status == 6 || body.status == 7) { //MustForceSave, CorruptedForceSave
+            processSave(body.url, body, fileName, userAddress, response);
+        }
     }
 
     var readbody = function (request, response, fileName, userAddress) {
@@ -402,11 +405,10 @@ app.get("/editor", function (req, res) {
         var diff = [];
         var lang = docManager.getLang();
         var userid = req.query.userid ? req.query.userid : "uid-1";
-        var firstname = req.query.firstname ? req.query.firstname : "Jonn";
-        var lastname = req.query.lastname ? req.query.lastname : "Smith";
+        var name = req.query.name ? req.query.name : "Jonn Smith";
 
         if (fileExt != null) {
-            var fileName = docManager.createDemo((req.query.sample ? "sample." : "new.") + fileExt, userid, firstname + " " + lastname);
+            var fileName = docManager.createDemo((req.query.sample ? "sample." : "new.") + fileExt, userid, name);
 
             var redirectPath = docManager.getProtocol() + "://" + docManager.req.get("host") + "/editor?fileName=" + encodeURIComponent(fileName) + docManager.getCustomParams();
             res.redirect(redirectPath);
@@ -472,8 +474,7 @@ app.get("/editor", function (req, res) {
                 curUserHostAddress: docManager.curUserHostAddress(),
                 lang: lang,
                 userid: userid,
-                firstname: firstname,
-                lastname: lastname,
+                name: name,
                 fileChoiceUrl: fileChoiceUrl,
                 plugins: plugins
             },

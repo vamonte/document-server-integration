@@ -1,6 +1,6 @@
 ﻿<!--*
  *
- * (c) Copyright Ascensio System Limited 2010-2016
+ * (c) Copyright Ascensio System Limited 2010-2017
  *
  * This program is freeware. You can redistribute it and/or modify it under the terms of the GNU 
  * General Public License (GPL) version 3 as published by the Free Software Foundation (https://www.gnu.org/copyleft/gpl.html). 
@@ -28,8 +28,10 @@
 <head runat="server">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width" />
-    <title>ONLYOFFICE™</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>ONLYOFFICE</title>
     <link rel="icon" href="images/favicon.ico" type="image/x-icon" />
     <link rel="stylesheet" type="text/css" href="stylesheets/editor.css" />
 </head>
@@ -122,8 +124,7 @@
                         callbackUrl: "<%- editor.callbackUrl %>",
                         user: {
                             id: "<%= editor.userid %>",
-                            firstname: "<%= editor.firstname %>",
-                            lastname: "<%= editor.lastname %>"
+                            name: "<%= editor.name %>",
                         },
                         embedded: {
                             saveUrl: "<%= file.uri %>",
