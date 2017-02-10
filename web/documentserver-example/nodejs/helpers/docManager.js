@@ -139,12 +139,12 @@ docManager.saveFileData = function (fileName, userid, username) {
 };
 
 docManager.getFileData = function (fileName, userAddress) {
-    var file_info = docManager.historyPath(fileName, userAddress, true);
-    if (!this.existsSync(file_info)) {
+    const history = path.join(docManager.historyPath(fileName, userAddress, true), fileName + ".txt");
+    if (!this.existsSync(history)) {
         return ["2016-01-01", "uid-1", "John Smith"];
     }
 
-    return ((fileSystem.readFileSync(path.join(file_info, fileName + ".txt"))).toString()).split(",");
+    return ((fileSystem.readFileSync(history)).toString()).split(",");
 };
 
 docManager.getFileUri = function (fileName) {
@@ -152,7 +152,7 @@ docManager.getFileUri = function (fileName) {
 };
 
 docManager.getlocalFileUri = function (fileName, version) {
-    var serverPath = docManager.getProtocol() + "://" + docManager.req.get("host");
+    var serverPath = docManager.getServerUrl();
     var storagePath = storageFolder.length ? storageFolder + "/" : "";
     var hostAddress = docManager.curUserHostAddress();
     var url = serverPath + "/" + storagePath + hostAddress + "/" + encodeURIComponent(fileName);
@@ -167,7 +167,7 @@ docManager.getServerUrl = function () {
 };
 
 docManager.getCallback = function (fileName) {
-    var server = docManager.getProtocol() + "://" + docManager.req.get("host");
+    var server = docManager.getServerUrl();
     var hostAddress = docManager.curUserHostAddress();
     var handler = "/track?useraddress=" + encodeURIComponent(hostAddress) + "&filename=" + encodeURIComponent(fileName);
 

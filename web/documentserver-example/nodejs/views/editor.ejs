@@ -96,6 +96,10 @@
                 innerAlert(event.data);
         };
 
+        var onOutdatedVersion = function (event) {
+            location.reload(true);
+        };
+
         var connectEditor = function () {
 
             docEditor = new DocsAPI.DocEditor("iframeEditor",
@@ -114,8 +118,9 @@
                             created: new Date().toDateString()
                         },
                         permissions: {
+                            download: true,
                             edit: "<%= editor.isEdit %>" == "true",
-                            download: true
+                            review: true,
                         }   
                     },
                     editorConfig: {
@@ -138,7 +143,7 @@
                             comments: true,
                             feedback: true,
                             goback: {
-                                url: ("<%= editor.type %>" == "embedded" ? null : "<%= editor.getServerUrl %>")
+                                url: "<%= editor.getServerUrl %>"
                             }
                         },
                         fileChoiceUrl: "<%= editor.fileChoiceUrl %>",
@@ -151,7 +156,8 @@
                         "onError": onError,
                         "onRequestHistory":  onRequestHistory,
                         "onRequestHistoryData": onRequestHistoryData,
-                        "onRequestHistoryClose": onRequestHistoryClose
+                        "onRequestHistoryClose": onRequestHistoryClose,
+                        "onOutdatedVersion": onOutdatedVersion,
                     }
             });
         };

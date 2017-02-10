@@ -289,7 +289,7 @@ footer {
     background-repeat: no-repeat;
     display: inline-block;
     height: 16px;
-    max-width: 450px;
+    max-width: 250px;
     margin-bottom: -6px;
     overflow: hidden;
     padding: 8px 0 1px 34px;
@@ -422,6 +422,9 @@ footer {
 }
 .contentCells-icon {
     width: 6%;
+}
+.contentCells-icon-2 {
+    width: 18%;
 }
 .contentCellsSmall {
     padding: 5px 1px 5px 6px;

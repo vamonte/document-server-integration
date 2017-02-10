@@ -279,8 +279,8 @@
                         <thead>
                             <tr class="tableHeader">
                                 <td class="tableHeaderCell tableHeaderCellFileName">Filename</td>
-                                <td colspan="2" class="tableHeaderCell contentCells-shift">Editors</td>
-                                <td colspan="3" class="tableHeaderCell">Viewers</td>
+                                <td colspan="1" class="tableHeaderCell contentCells-shift">Editors</td>
+                                <td colspan="1" class="tableHeaderCell">Viewers</td>
 								<td colspan="1" class="tableHeaderCell">Download</td>
 								<td colspan="1" class="tableHeaderCell">Remove</td>
                             </tr>
@@ -292,24 +292,22 @@
                                     <a class="stored-edit <%= storedFiles[i].documentType%>"  style="box-sizing:content-box;" href="editor?fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
                                         <span title="<%= storedFiles[i].url %>"><%= storedFiles[i].name %></span></a>
                                 </td>
-                                <td class="contentCells contentCells-icon">
+                                <td class="contentCells contentCells-icon-2">
                                     <a href="editor?fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
                                         <img src="images/desktop-24.png" alt="Open in editor for full size screens" title="Open in editor for full size screens" /></a>
-                                </td>
-                                <td class="contentCells contentCells-shift contentCells-icon">
-                                    <a href="editor?type=mobile&mode=edit&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
+									<a href="editor?type=mobile&mode=edit&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
                                         <img src="images/mobile-24.png" alt="Open in editor for mobile devices" title="Open in editor for mobile devices" /></a>
+									<% if (storedFiles[i].documentType == "text") { %>
+                                    <a href="editor?mode=review&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
+                                        <img src="images/review-24.png" alt="Open in editor for review" title="Open in editor for review" /></a>
+                                    <% } %>
                                 </td>
-                                <td class="contentCells contentCells-icon">
+                                <td class="contentCells contentCells-icon-2">
                                     <a href="editor?mode=view&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
                                         <img src="images/desktop-24.png" alt="Open in viewer for full size screens" title="Open in viewer for full size screens" /></a>
-                                </td>
-                                <td class="contentCells contentCells-icon">
-                                    <a href="editor?type=mobile&mode=view&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
+									<a href="editor?type=mobile&mode=view&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
                                         <img src="images/mobile-24.png" alt="Open in viewer for mobile devices" title="Open in viewer for mobile devices" /></a>
-                                </td>
-                                <td class="contentCells contentCells-icon">
-                                    <a href="editor?type=embedded&mode=embedded&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
+									<a href="editor?type=embedded&mode=embedded&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
                                         <img src="images/embeded-24.png" alt="Open in embedded mode" title="Open in embedded mode" /></a>
                                 </td>
                                 <td class="contentCells contentCells-icon">
