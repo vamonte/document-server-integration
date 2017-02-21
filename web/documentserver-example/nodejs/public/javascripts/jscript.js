@@ -68,7 +68,9 @@ if (typeof jQuery != "undefined") {
             dataType: 'json',
             add: function (e, data) {                
                 data.submit();
-				setTimeout(function () { document.location.reload(); }, 1000);
+            },
+			done: function (e, data) {
+				document.location.reload();
             }
         });
     });
