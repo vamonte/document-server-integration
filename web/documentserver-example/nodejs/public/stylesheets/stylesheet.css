@@ -403,6 +403,9 @@ footer {
     padding: 2px 1px 2px 5px;
     text-align: center;
 }
+.delete-all {
+    cursor: pointer;
+}
 .tableHeaderCellFileName {
     text-align: left;
 }
