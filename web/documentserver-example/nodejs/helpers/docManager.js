@@ -342,19 +342,23 @@ docManager.getHistory = function (fileName, content, keyVersion, version) {
 };
 
 docManager.cleanFolderRecursive = function (folder, me) {
-	if (fileSystem.existsSync(folder)) {
-		const files = fileSystem.readdirSync(folder);
-		files.forEach((file) => {
-			const curPath = path.join(folder, file);
-			if (fileSystem.lstatSync(curPath).isDirectory()) {
-				this.cleanFolderRecursive(curPath, true);
-			} else {
-				fileSystem.unlinkSync(curPath);
+	try {
+		if (fileSystem.existsSync(folder)) {
+			const files = fileSystem.readdirSync(folder);
+			files.forEach((file) => {
+				const curPath = path.join(folder, file);
+				if (fileSystem.lstatSync(curPath).isDirectory()) {
+					this.cleanFolderRecursive(curPath, true);
+				} else {
+					fileSystem.unlinkSync(curPath);
+				}
+			});
+			if (me) {
+				fileSystem.rmdirSync(folder);
 			}
-		});
-		if (me) {
-			fileSystem.rmdirSync(folder);
 		}
+	} catch (e) {
+
 	}
 };
 
