@@ -292,7 +292,7 @@
                             <tr class="tableRow" title="<%=storedFiles[i].name%>">
                                 <td class="contentCells" style="text-align:left;">
                                     <a class="stored-edit <%= storedFiles[i].documentType%>"  style="box-sizing:content-box;" href="editor?fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
-                                        <span title="<%= storedFiles[i].url %>"><%= storedFiles[i].name %></span></a>
+                                        <span title="<%= storedFiles[i].name %>"><%= storedFiles[i].name %></span></a>
                                 </td>
                                 <td class="contentCells contentCells-icon-2">
                                     <a href="editor?type=desktop&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
@@ -313,7 +313,7 @@
                                         <img src="images/embeded-24.png" alt="Open in embedded mode" title="Open in embedded mode" /></a>
                                 </td>
                                 <td class="contentCells contentCells-icon">
-                                    <a href="<%= storedFiles[i].url %>">
+                                    <a href="download?fileName=<%= encodeURIComponent(storedFiles[i].name) %>">
                                         <img class="icon-download" src="images/download-24.png" alt="download" /></a>
                                 </td>
 								<td class="contentCells contentCells-icon">								

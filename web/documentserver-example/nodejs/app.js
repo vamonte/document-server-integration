@@ -30,14 +30,20 @@ const bodyParser = require("body-parser");
 const fileSystem = require("fs");
 const formidable = require("formidable");
 const syncRequest = require("sync-request");
+const jwt = require('jsonwebtoken');
 const config = require('config');
 const configServer = config.get('server');
+const mime = require("mime");
 const docManager = require("./helpers/docManager");
 const documentService = require("./helpers/documentService");
 const fileUtility = require("./helpers/fileUtility");
 const siteUrl = configServer.get('siteUrl');
 const fileChoiceUrl = configServer.has('fileChoiceUrl') ? configServer.get('fileChoiceUrl') : "";
 const plugins = config.get('plugins');
+const cfgSignatureEnable = configServer.get('token.enable');
+const cfgSignatureUseForRequest = configServer.get('token.useforrequest');
+const cfgSignatureSecretExpiresIn = configServer.get('token.expiresIn');
+const cfgSignatureSecret = configServer.get('token.secret');
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
 
@@ -110,6 +116,26 @@ app.get("/", function (req, res) {
     }
 });
 
+app.get("/download", function(req, res) {
+    docManager.init(__dirname, req, res);
+
+    var fileName = fileUtility.getFileName(req.query.fileName);
+    var userAddress = docManager.curUserHostAddress();
+
+    var path = docManager.forcesavePath(fileName, userAddress, false);
+    if (path == "") {
+        path = docManager.storagePath(fileName, userAddress);
+    }
+
+    res.setHeader("Content-Length", fileSystem.statSync(path).size);
+    res.setHeader("Content-Type", mime.lookup(path));
+
+    res.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+
+    var filestream = fileSystem.createReadStream(path);
+    filestream.pipe(res);
+});
+
 app.post("/upload", function (req, res) {
 
     docManager.init(__dirname, req, res);
@@ -134,6 +160,13 @@ app.post("/upload", function (req, res) {
 		}
 
         const file = files.uploadedFile;
+
+        if (file == undefined) {
+            res.writeHead(200, { "Content-Type": "text/plain" });
+            res.write("{ \"error\": \"Uploaded file not found\"}");
+            res.end();
+            return;
+        }
 
         file.name = docManager.getCorrectName(file.name);
 
@@ -289,7 +322,7 @@ app.post("/track", function (req, res) {
 
     var processTrack = function (response, body, fileName, userAddress) {
 
-        var processSave = function (downloadUri, body, fileName, userAddress, resp, newVersion) {
+        var processSave = function (downloadUri, body, fileName, userAddress, resp) {
             var curExt = fileUtility.getFileExtension(fileName);
             var downloadExt = fileUtility.getFileExtension(downloadUri);
 
@@ -297,8 +330,8 @@ app.post("/track", function (req, res) {
                 var key = documentService.generateRevisionId(downloadUri);
 
                 try {
-                    documentService.getConvertedUriSync(downloadUri, downloadExt, curExt, key, function(dUri){
-                        processSave(dUri, body, fileName, userAddress, resp, newVersion)
+                    documentService.getConvertedUriSync(downloadUri, downloadExt, curExt, key, function (dUri) {
+                        processSave(dUri, body, fileName, userAddress, resp)
                     });
                     return;
                 } catch (ex) {
@@ -311,40 +344,80 @@ app.post("/track", function (req, res) {
 
                 var path = docManager.storagePath(fileName, userAddress);
 
-                if (newVersion) {
-                    var historyPath = docManager.historyPath(fileName, userAddress);
-                    if (historyPath == "") {
-                        historyPath = docManager.historyPath(fileName, userAddress, true);
-                        docManager.createDirectory(historyPath);
-                    }
-
-                    var count_version = docManager.countVersion(historyPath);
-                    version = count_version + 1;
-                    versionPath = docManager.versionPath(fileName, userAddress, version);
-                    docManager.createDirectory(versionPath);
-
-                    var downloadZip = body.changesurl;
-                    if (downloadZip) {
-                        var path_changes = docManager.diffPath(fileName, userAddress, version);
-                        var diffZip = syncRequest("GET", downloadZip);
-                        fileSystem.writeFileSync(path_changes, diffZip.getBody());
-                    }
-
-                    var changeshistory = body.changeshistory || JSON.stringify(body.history);
-                    if (changeshistory) {
-                        var path_changes_json = docManager.changesPath(fileName, userAddress, version);
-                        fileSystem.writeFileSync(path_changes_json, changeshistory);
-                    }
-
-                    var path_key = docManager.keyPath(fileName, userAddress, version);
-                    fileSystem.writeFileSync(path_key, body.key);
-
-                    var path_prev = docManager.prevFilePath(fileName, userAddress, version);
-                    fileSystem.writeFileSync(path_prev, fileSystem.readFileSync(path));
+                var historyPath = docManager.historyPath(fileName, userAddress);
+                if (historyPath == "") {
+                    historyPath = docManager.historyPath(fileName, userAddress, true);
+                    docManager.createDirectory(historyPath);
                 }
+
+                var count_version = docManager.countVersion(historyPath);
+                version = count_version + 1;
+                versionPath = docManager.versionPath(fileName, userAddress, version);
+                docManager.createDirectory(versionPath);
+
+                var downloadZip = body.changesurl;
+                if (downloadZip) {
+                    var path_changes = docManager.diffPath(fileName, userAddress, version);
+                    var diffZip = syncRequest("GET", downloadZip);
+                    fileSystem.writeFileSync(path_changes, diffZip.getBody());
+                }
+
+                var changeshistory = body.changeshistory || JSON.stringify(body.history);
+                if (changeshistory) {
+                    var path_changes_json = docManager.changesPath(fileName, userAddress, version);
+                    fileSystem.writeFileSync(path_changes_json, changeshistory);
+                }
+
+                var path_key = docManager.keyPath(fileName, userAddress, version);
+                fileSystem.writeFileSync(path_key, body.key);
+
+                var path_prev = docManager.prevFilePath(fileName, userAddress, version);
+                fileSystem.writeFileSync(path_prev, fileSystem.readFileSync(path));
 
                 var file = syncRequest("GET", downloadUri);
                 fileSystem.writeFileSync(path, file.getBody());
+
+                var forcesavePath = docManager.forcesavePath(fileName, userAddress, false);
+                if (forcesavePath != "") {
+                    fileSystem.unlinkSync(forcesavePath);
+                }
+            } catch (ex) {
+                console.log(ex);
+            }
+
+            response.write("{\"error\":0}");
+            response.end();
+        };
+
+        var processForceSave = function (downloadUri, body, fileName, userAddress, resp) {
+            var curExt = fileUtility.getFileExtension(fileName);
+            var downloadExt = fileUtility.getFileExtension(downloadUri);
+
+            if (downloadExt != curExt) {
+                var key = documentService.generateRevisionId(downloadUri);
+
+                try {
+                    documentService.getConvertedUriSync(downloadUri, downloadExt, curExt, key, function (dUri) {
+                        processForceSave(dUri, body, fileName, userAddress, resp)
+                    });
+                    return;
+                } catch (ex) {
+                    console.log(ex);
+                    fileName = docManager.getCorrectName(fileUtility.getFileName(fileName, true) + downloadExt, userAddress)
+                }
+            }
+
+            try {
+
+                var path = docManager.storagePath(fileName, userAddress);
+
+                var forcesavePath = docManager.forcesavePath(fileName, userAddress, false);
+                if (forcesavePath == "") {
+                    forcesavePath = docManager.forcesavePath(fileName, userAddress, true);
+                }
+
+                var file = syncRequest("GET", downloadUri);
+                fileSystem.writeFileSync(forcesavePath, file.getBody());
             } catch (ex) {
                 console.log(ex);
             }
@@ -366,10 +439,11 @@ app.post("/track", function (req, res) {
                 }
             }
 
-        } else if (body.status == 2 || body.status == 3 //MustSave, Corrupted
-                   || body.status == 6 || body.status == 7) { //MustForceSave, CorruptedForceSave
-            var newVersion = (body.status == 2 || body.status == 3);
-            processSave(body.url, body, fileName, userAddress, response, newVersion);
+        } else if (body.status == 2 || body.status == 3) { //MustSave, Corrupted
+            processSave(body.url, body, fileName, userAddress, response);
+            return;
+        } else if (body.status == 6 || body.status == 7) { //MustForceSave, CorruptedForceSave
+            processForceSave(body.url, body, fileName, userAddress, response);
             return;
         }
 
@@ -388,6 +462,29 @@ app.post("/track", function (req, res) {
         });
     };
 
+    //checkjwt
+    if (cfgSignatureEnable && cfgSignatureUseForRequest) {
+        var checkJwtHeaderRes = documentService.checkJwtHeader(req);
+        if (checkJwtHeaderRes) {
+            if (checkJwtHeaderRes.payload) {
+                body = checkJwtHeaderRes.payload;
+            }
+            if (checkJwtHeaderRes.query) {
+                if (checkJwtHeaderRes.query.useraddress) {
+                    userAddress = checkJwtHeaderRes.query.useraddress;
+                }
+                if (checkJwtHeaderRes.query.filename) {
+                    fileName = fileUtility.getFileName(checkJwtHeaderRes.query.filename);
+                }
+            }
+            processTrack(res, body, fileName, userAddress);
+        } else {
+            res.write("{\"error\":1}");
+            res.end();
+        }
+        return;
+    }
+
     if (req.body.hasOwnProperty("status")) {
         processTrack(res, req.body, fileName, userAddress);
     } else {
@@ -402,8 +499,7 @@ app.get("/editor", function (req, res) {
 
         var fileExt = req.query.fileExt;
         var history = [];
-        var prevUrl = [];
-        var diff = [];
+        var historyData = [];
         var lang = docManager.getLang();
         var userid = req.query.userid ? req.query.userid : "uid-1";
         var name = req.query.name ? req.query.name : "Jonn Smith";
@@ -417,7 +513,7 @@ app.get("/editor", function (req, res) {
         }
 
         var userAddress = docManager.curUserHostAddress();
-        fileName = fileUtility.getFileName(req.query.fileName);
+        var fileName = fileUtility.getFileName(req.query.fileName);
         var key = docManager.getKey(fileName);
         var url = docManager.getFileUri(fileName);
         var mode = req.query.mode || "edit"; //mode: view/edit 
@@ -431,33 +527,55 @@ app.get("/editor", function (req, res) {
         var countVersion = 1;
 
         var historyPath = docManager.historyPath(fileName, userAddress);
-        changes = null;
+        var changes = null;
+        var keyVersion = key;
 
         if (historyPath != '') {
 
             countVersion = docManager.countVersion(historyPath) + 1;
-            var prevPath = docManager.getlocalFileUri(fileName, 1) + "/prev" + fileUtility.getFileExtension(fileName);
-            var diffPath = null;
-            for (var i = 1; i < countVersion; i++) {
-                var keyPath = docManager.keyPath(fileName, userAddress, i);
-                var keyVersion = "" + fileSystem.readFileSync(keyPath);
+            for (var i = 1; i <= countVersion; i++) {
+                if (i < countVersion) {
+                    var keyPath = docManager.keyPath(fileName, userAddress, i);
+                    keyVersion = "" + fileSystem.readFileSync(keyPath);
+                } else {
+                    keyVersion = key;
+                }
                 history.push(docManager.getHistory(fileName, changes, keyVersion, i));
 
-                prevUrl.push(prevPath);
-                prevPath = docManager.getlocalFileUri(fileName, i) + "/prev" + fileUtility.getFileExtension(fileName);
-
-                diff.push(diffPath);
-                diffPath = docManager.getlocalFileUri(fileName, i) + "/diff.zip";
-
-                var changesFile = docManager.changesPath(fileName, userAddress, i);
-                var changes = docManager.getChanges(changesFile);
+                var historyD = {
+                    version: i,
+                    key: keyVersion,
+                    url: i == countVersion ? url : (docManager.getlocalFileUri(fileName, i, true) + "/prev" + fileUtility.getFileExtension(fileName)),
+                };
+                if (i > 1) {
+                    historyD.previous = {
+                        key: historyData[i-2].key,
+                        url: historyData[i-2].url,
+                        
+                    };
+                    historyD.changesUrl = docManager.getlocalFileUri(fileName, i-1) + "/diff.zip";
+                }
+                historyData.push(historyD);
+                
+                if (i < countVersion) {
+                    var changesFile = docManager.changesPath(fileName, userAddress, i);
+                    changes = docManager.getChanges(changesFile);
+                }
             }
-            prevUrl.push(prevPath);
-            diff.push(diffPath);
         } else {
-            prevUrl.push(url);
+            history.push(docManager.getHistory(fileName, changes, keyVersion, countVersion));
+            historyData.push({
+                version: countVersion,
+                key: key,
+                url: url
+            });
         }
-        history.push(docManager.getHistory(fileName, changes, key, countVersion));
+
+        if (cfgSignatureEnable) {
+            for (var i = 0; i < historyData.length; i++) {
+                historyData[i].token = jwt.sign(historyData[i], cfgSignatureSecret, {expiresIn: cfgSignatureSecretExpiresIn});
+            }
+        }
 
         var argss = {
             apiUrl: siteUrl + configServer.get('apiUrl'),
@@ -465,32 +583,42 @@ app.get("/editor", function (req, res) {
                 name: fileName,
                 ext: fileUtility.getFileExtension(fileName, true),
                 uri: url,
-                version: countVersion
+                version: countVersion,
+                created: new Date().toDateString()
             },
             editor: {
                 type: type,
                 documentType: fileUtility.getFileType(fileName),
                 key: key,
+                token: "",
                 callbackUrl: docManager.getCallback(fileName),
                 isEdit: canEdit && mode != "review",
                 mode: canEdit && mode != "view" ? "edit" : "view",
                 canBackToFolder: type != "embedded",
-                getServerUrl: docManager.getServerUrl(),
+                backUrl: docManager.getServerUrl(),
                 curUserHostAddress: docManager.curUserHostAddress(),
                 lang: lang,
                 userid: userid,
                 name: name,
                 fileChoiceUrl: fileChoiceUrl,
-                plugins: plugins
+                plugins: JSON.stringify(plugins)
             },
             history: history,
-            setHistoryData: {
-                url: prevUrl,
-                changesUrl: diff
-            }
+            historyData: historyData
         };
 
-        res.render("editor", argss);
+        if (cfgSignatureEnable) {
+            app.render('config', argss, function(err, html){
+                if (err) {
+                    console.log(err);
+                } else {
+                    argss.editor.token = jwt.sign(JSON.parse("{"+html+"}"), cfgSignatureSecret, {expiresIn: cfgSignatureSecretExpiresIn});
+                }
+                res.render("editor", argss);
+              });
+        } else {
+              res.render("editor", argss);
+        }
     }
     catch (ex) {
         console.log(ex);
