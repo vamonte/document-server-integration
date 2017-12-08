@@ -37,14 +37,14 @@ import java.util.Map;
 public class FileUtility
 {
     static {}
-    
+
     public static FileType GetFileType(String fileName)
     {
         String ext = GetFileExtension(fileName).toLowerCase();
 
         if (ExtsDocument.contains(ext))
             return FileType.Text;
-        
+
         if (ExtsSpreadsheet.contains(ext))
             return FileType.Spreadsheet;
         
@@ -56,26 +56,33 @@ public class FileUtility
 
     public static List<String> ExtsDocument = Arrays.asList
     (
-        ".docx", ".doc", ".odt", ".rtf", ".txt",
-        ".html", ".htm", ".mht", ".pdf", ".djvu",
-        ".fb2", ".epub", ".xps"
+        ".doc", ".docx", ".docm",
+        ".dot", ".dotx", ".dotm",
+        ".odt", ".fodt", ".rtf", ".txt",
+        ".html", ".htm", ".mht",
+        ".pdf", ".djvu", ".fb2", ".epub", ".xps"
     );
 
     public static List<String> ExtsSpreadsheet = Arrays.asList
     (
-        ".xls", ".xlsx", ".ods", ".csv"
+        ".xls", ".xlsx", ".xlsm",
+        ".xlt", ".xltx", ".xltm",
+        ".ods", ".fods", ".csv"
     );
 
     public static List<String> ExtsPresentation = Arrays.asList
     (
-        ".pps", ".ppsx", ".ppt", ".pptx",".odp"
+        ".pps", ".ppsx", ".ppsm",
+        ".ppt", ".pptx", ".pptm",
+        ".pot", ".potx", ".potm",
+        ".odp", ".fodp"
     );
-    
+
 
     public static String GetFileName (String url)
     {
         if(url == null) return null;
-        
+
         //for external file url
         String tempstorage = ConfigManager.GetProperty("files.docservice.url.tempstorage");
         if(!tempstorage.isEmpty() && url.startsWith(tempstorage))
@@ -87,7 +94,7 @@ public class FileUtility
         String fileName = url.substring(url.lastIndexOf('/')+1, url.length());
         return fileName;
     }
-    
+
     public static String GetFileNameWithoutExtension (String url)
     {
         String fileName = GetFileName(url);

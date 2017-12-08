@@ -519,7 +519,7 @@ app.get("/editor", function (req, res) {
         var fileName = fileUtility.getFileName(req.query.fileName);
         var key = docManager.getKey(fileName);
         var url = docManager.getFileUri(fileName);
-        var mode = req.query.mode || "edit"; //mode: view/edit 
+        var mode = req.query.mode || "edit"; //mode: view/edit/review/comment/embedded
         var type = req.query.type || ""; //type: embedded/mobile/desktop
         if (type == "") {
                 type = new RegExp(configServer.get("mobileRegEx"), "i").test(req.get('User-Agent')) ? "mobile" : "desktop";
@@ -550,14 +550,15 @@ app.get("/editor", function (req, res) {
                     key: keyVersion,
                     url: i == countVersion ? url : (docManager.getlocalFileUri(fileName, i, true) + "/prev" + fileUtility.getFileExtension(fileName)),
                 };
-                if (i > 1) {
+
+                if (i > 1 && docManager.existsSync(docManager.diffPath(fileName, userAddress, i-1))) {
                     historyD.previous = {
                         key: historyData[i-2].key,
                         url: historyData[i-2].url,
-                        
                     };
                     historyD.changesUrl = docManager.getlocalFileUri(fileName, i-1) + "/diff.zip";
                 }
+
                 historyData.push(historyD);
                 
                 if (i < countVersion) {
@@ -595,9 +596,10 @@ app.get("/editor", function (req, res) {
                 key: key,
                 token: "",
                 callbackUrl: docManager.getCallback(fileName),
-                isEdit: canEdit && mode == "edit",
+                isEdit: canEdit && (mode == "edit" || mode == "filter"),
                 review: mode == "edit" || mode == "review",
-                comment: mode == "edit" || mode == "comment",
+                comment: mode != "view" && mode != "embedded",
+                modifyFilter: mode != "filter",
                 mode: canEdit && mode != "view" ? "edit" : "view",
                 canBackToFolder: type != "embedded",
                 backUrl: docManager.getServerUrl(),

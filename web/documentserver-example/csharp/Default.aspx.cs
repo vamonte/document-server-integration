@@ -42,22 +42,26 @@ namespace OnlineEditorsExample
     {
         public static readonly List<string> ExtsSpreadsheet = new List<string>
             {
-                ".xls", ".xlsx",
-                ".ods", ".csv"
+                ".xls", ".xlsx", ".xlsm",
+                ".xlt", ".xltx", ".xltm",
+                ".ods", ".fods", ".csv"
             };
 
         public static readonly List<string> ExtsPresentation = new List<string>
             {
-                ".pps", ".ppsx",
-                ".ppt", ".pptx",
-                ".odp"
+                ".pps", ".ppsx", ".ppsm",
+                ".ppt", ".pptx", ".pptm",
+                ".pot", ".potx", ".potm",
+                ".odp", ".fodp"
             };
 
         public static readonly List<string> ExtsDocument = new List<string>
             {
-                ".docx", ".doc", ".odt", ".rtf", ".txt",
-                ".html", ".htm", ".mht", ".pdf", ".djvu",
-                ".fb2", ".epub", ".xps"
+                ".doc", ".docx", ".docm",
+                ".dot", ".dotx", ".dotm",
+                ".odt", ".fodt", ".rtf", ".txt",
+                ".html", ".htm", ".mht",
+                ".pdf", ".djvu", ".fb2", ".epub", ".xps"
             };
 
         public static string GetInternalExtension(string extension)
