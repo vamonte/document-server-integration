@@ -1,7 +1,7 @@
 <?php
 /*
  *
- * (c) Copyright Ascensio System Limited 2010-2017
+ * (c) Copyright Ascensio System Limited 2010-2018
  *
  * The MIT License (MIT)
  *
@@ -62,7 +62,7 @@
 
         if(!@copy(dirname(__FILE__) . DIRECTORY_SEPARATOR . "app_data" . DIRECTORY_SEPARATOR . $demoName, getStoragePath($demoFilename)))
         {
-            sendlog("Copy file error to ". getStoragePath($demoFilename), "logs/common.log");
+            sendlog("Copy file error to ". getStoragePath($demoFilename), "common.log");
             //Copy error!!!
         }
 
@@ -226,23 +226,6 @@
             window.addEventListener("load", сonnectEditor);
         } else if (window.attachEvent) {
             window.attachEvent("load", сonnectEditor);
-        }
-
-        function getXmlHttp() {
-            var xmlhttp;
-            try {
-                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-            } catch (e) {
-                try {
-                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-                } catch (ex) {
-                    xmlhttp = false;
-                }
-            }
-            if (!xmlhttp && typeof XMLHttpRequest != 'undefined') {
-                xmlhttp = new XMLHttpRequest();
-            }
-            return xmlhttp;
         }
 
     </script>

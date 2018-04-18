@@ -12,7 +12,7 @@
   },
   "server": {
     "port": 3000,
-    "siteUrl": "http://documentserver/",
+    "siteUrl": "https://documentserver/",
     "commandUrl": "coauthoring/CommandService.ashx",
     "converterUrl": "ConvertService.ashx",
     "tempStorageUrl": "ResourceService.ashx",
@@ -20,7 +20,7 @@
     "preloaderUrl": "web-apps/apps/api/documents/cache-scripts.html",
     "exampleUrl": null,
     "viewedDocs": [".pdf", ".djvu", ".xps"],
-    "editedDocs": [".docx", ".docm", ".doc", ".dotx", ".dotm", ".odt", ".fodt", ".xlsx", ".xlsm", ".xls", ".xltx", ".xltm", ".xlt", ".ods", ".fods", ".csv", ".pptx", ".ppsx", ".pptm", ".ppt", ".ppsm", ".pps", ".potx", ".potm", ".pot", ".odp", ".fodp", ".rtf", ".txt", ".mht", ".html", ".htm", ".epub"],
+    "editedDocs": [".docx", ".docm", ".doc", ".dotx", ".dotm", ".dot", ".odt", ".fodt", ".ott", ".xlsx", ".xlsm", ".xls", ".xltx", ".xltm", ".xlt", ".ods", ".fods", ".csv", ".pptx", ".ppsx", ".pptm", ".ppt", ".ppsm", ".pps", ".potx", ".potm", ".pot", ".odp", ".fodp", ".otp", ".rtf", ".txt", ".mht", ".html", ".htm", ".epub"],
     "convertedDocs": [],
     "storageFolder": "files",
     "maxFileSize": 1073741824,

@@ -1,6 +1,6 @@
 <!--*
  *
- * (c) Copyright Ascensio System Limited 2010-2017
+ * (c) Copyright Ascensio System Limited 2010-2018
  *
  * The MIT License (MIT)
  *
@@ -144,23 +144,6 @@
             window.addEventListener("load", сonnectEditor);
         } else if (window.attachEvent) {
             window.attachEvent("load", сonnectEditor);
-        }
-
-        function getXmlHttp() {
-            var xmlhttp;
-            try {
-                xmlhttp = new ActiveXObject("Msxml2.XMLHTTP");
-            } catch (e) {
-                try {
-                    xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-                } catch (ex) {
-                    xmlhttp = false;
-                }
-            }
-            if (!xmlhttp && typeof XMLHttpRequest !== "undefined") {
-                xmlhttp = new XMLHttpRequest();
-            }
-            return xmlhttp;
         }
 
     </script>

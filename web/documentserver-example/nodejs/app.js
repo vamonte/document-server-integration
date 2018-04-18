@@ -1,6 +1,7 @@
-﻿/*
+﻿"use strict";
+/*
  *
- * (c) Copyright Ascensio System Limited 2010-2017
+ * (c) Copyright Ascensio System Limited 2010-2018
  *
  * The MIT License (MIT)
  *
@@ -150,6 +151,7 @@ app.post("/upload", function (req, res) {
     const form = new formidable.IncomingForm();
     form.uploadDir = uploadDirTmp;
     form.keepExtensions = true;
+    form.maxFileSize = configServer.get("maxFileSize");
 
     form.parse(req, function (err, fields, files) {
     	if (err) {
@@ -354,7 +356,7 @@ app.post("/track", function (req, res) {
 
                     var count_version = docManager.countVersion(historyPath);
                     version = count_version + 1;
-                    versionPath = docManager.versionPath(fileName, userAddress, version);
+                    var versionPath = docManager.versionPath(fileName, userAddress, version);
                     docManager.createDirectory(versionPath);
 
                     var downloadZip = body.changesurl;
@@ -469,6 +471,7 @@ app.post("/track", function (req, res) {
     if (cfgSignatureEnable && cfgSignatureUseForRequest) {
         var checkJwtHeaderRes = documentService.checkJwtHeader(req);
         if (checkJwtHeaderRes) {
+            var body;
             if (checkJwtHeaderRes.payload) {
                 body = checkJwtHeaderRes.payload;
             }
