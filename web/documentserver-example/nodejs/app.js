@@ -36,6 +36,7 @@ const jwt = require('jsonwebtoken');
 const config = require('config');
 const configServer = config.get('server');
 const mime = require("mime");
+const os = require("os");
 const docManager = require("./helpers/docManager");
 const documentService = require("./helpers/documentService");
 const fileUtility = require("./helpers/fileUtility");
@@ -106,7 +107,8 @@ app.get("/", function (req, res) {
             convertExts: configServer.get('convertedDocs').join(","),
             editedExts: configServer.get('editedDocs').join(","),
             storedFiles: docManager.getStoredFiles(),
-            params: docManager.getCustomParams()
+            params: docManager.getCustomParams(),
+            hostname: os.hostname()
         });
 
     }
