@@ -1,6 +1,6 @@
 ﻿/*
  *
- * (c) Copyright Ascensio System Limited 2010-2018
+ * (c) Copyright Ascensio System SIA 2019
  *
  * The MIT License (MIT)
  *
@@ -99,10 +99,9 @@ if (typeof jQuery != "undefined") {
 
         timer = setTimeout(function () {
             var requestAddress = UrlConverter + "?filename=" + encodeURIComponent(jq("#hiddenFileName").val());
-
+            jq.ajaxSetup({ cache: false });
             jq.ajax({
                 async: true,
-                contentType: "text/xml",
                 type: "get",
                 url: requestAddress,
                 complete: function (data) {
@@ -191,7 +190,7 @@ if (typeof jQuery != "undefined") {
         jq("#mainProgress").addClass("embedded");
         jq("#beginEmbedded").addClass("disable");
 
-        jq("#embeddedView").attr("src", url);
+        jq("#uploadSteps").after('<iframe id="embeddedView" src="' + url + '" height="345px" width="600px" frameborder="0" scrolling="no" allowtransparency></iframe>');
     });
 
     jq(document).on("click", ".reload-page", function () {
@@ -208,7 +207,7 @@ if (typeof jQuery != "undefined") {
 
     jq(document).on("click", "#cancelEdit, .dialog-close", function () {
         jq('#hiddenFileName').val("");
-        jq("#embeddedView").attr("src", "");
+        jq("#embeddedView").remove();
         jq.unblockUI();
         if (mustReload) {
             document.location.reload();

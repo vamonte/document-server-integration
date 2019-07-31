@@ -1,7 +1,7 @@
 <?php
 /*
  *
- * (c) Copyright Ascensio System Limited 2010-2018
+ * (c) Copyright Ascensio System SIA 2019
  *
  * The MIT License (MIT)
  *
@@ -69,7 +69,7 @@
     <body>
         <form id="form1">
         <header>
-            <a href="/">
+            <a href="">
                 <img src ="css/images/logo.png" alt="ONLYOFFICE" />
             </a>
         </header>
@@ -177,7 +177,7 @@
                                     echo '  <a class="stored-edit '.$storeFile->documentType.'" href="doceditor.php?fileID='.urlencode($storeFile->name).'&user='.$user.'" target="_blank">';
                                     echo '   <span title="'.$storeFile->name.'">'.$storeFile->name.'</span>';
                                     echo '  </a>';
-                                    echo '  <a href="webeditor-ajax.php?type=download&filename='.$storeFile->name.'">';
+                                    echo '  <a href="'.FileUri($storeFile->name).'">';
                                     echo '   <img class="icon-download" src="css/images/download-24.png" alt="Download" title="Download" /></a>';
                                     echo '  </a>';
                                     echo '  <a class="delete-file" data="'.$storeFile->name.'">';

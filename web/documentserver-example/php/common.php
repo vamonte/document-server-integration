@@ -1,7 +1,7 @@
 <?php
 /*
  *
- * (c) Copyright Ascensio System Limited 2010-2018
+ * (c) Copyright Ascensio System SIA 2019
  *
  * The MIT License (MIT)
  *
@@ -150,7 +150,7 @@ function getClientIp() {
 function serverPath($forDocumentServer = NULL) {
     return $forDocumentServer && isset($GLOBALS['EXAMPLE_URL']) && $GLOBALS['EXAMPLE_URL'] != ""
         ? $GLOBALS['EXAMPLE_URL']
-        : ('http://' . $_SERVER['HTTP_HOST']);
+        : (getScheme() . '://' . $_SERVER['HTTP_HOST']);
 }
 
 function getCurUserHostAddress($userAddress = NULL) {
@@ -257,7 +257,7 @@ function getVirtualPath($forDocumentServer) {
 }
 
 function FileUri($file_name, $forDocumentServer = NULL) {
-    $uri = getVirtualPath($forDocumentServer) . $file_name;
+    $uri = getVirtualPath($forDocumentServer) . rawurlencode($file_name);
     return $uri;
 }
 

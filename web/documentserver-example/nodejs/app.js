@@ -1,7 +1,7 @@
 ﻿"use strict";
 /*
  *
- * (c) Copyright Ascensio System Limited 2010-2018
+ * (c) Copyright Ascensio System SIA 2019
  *
  * The MIT License (MIT)
  *
@@ -132,7 +132,7 @@ app.get("/download", function(req, res) {
     res.setHeader("Content-Length", fileSystem.statSync(path).size);
     res.setHeader("Content-Type", mime.lookup(path));
 
-    res.setHeader("Content-Disposition", "attachment; filename=\"" + fileName + "\"");
+    res.setHeader("Content-Disposition", "attachment; filename*=UTF-8\'\'" + encodeURIComponent(fileName));
 
     var filestream = fileSystem.createReadStream(path);
     filestream.pipe(res);
@@ -231,6 +231,7 @@ app.get("/convert", function (req, res) {
         if (error != null)
             result["error"] = error;
 
+        response.setHeader("Content-Type", "application/json");
         response.write(JSON.stringify(result));
         response.end();
     };
@@ -270,7 +271,7 @@ app.get("/convert", function (req, res) {
 
             fileSystem.renameSync(path.join(correctHistoryPath, fileName + ".txt"), path.join(correctHistoryPath, correctName + ".txt"));
 
-            writeResult(correctName, null, null);
+            writeResult(correctName, result, null);
         } catch (e) {
             console.log(e);
             writeResult(null, null, "Server error");
@@ -279,7 +280,11 @@ app.get("/convert", function (req, res) {
 
     try {
         if (configServer.get('convertedDocs').indexOf(fileExt) != -1) {
-            const key = documentService.generateRevisionId(fileUri);
+            let storagePath = docManager.storagePath(fileName);
+            const stat = fileSystem.statSync(storagePath);
+            let key = fileUri + stat.mtime.getTime();
+
+            key = documentService.generateRevisionId(key);
             documentService.getConvertedUri(fileUri, fileExt, internalFileExt, key, true, callback);
         } else {
             writeResult(fileName, null, null);
@@ -469,25 +474,32 @@ app.post("/track", function (req, res) {
 
     //checkjwt
     if (cfgSignatureEnable && cfgSignatureUseForRequest) {
-        var checkJwtHeaderRes = documentService.checkJwtHeader(req);
-        if (checkJwtHeaderRes) {
-            var body;
-            if (checkJwtHeaderRes.payload) {
-                body = checkJwtHeaderRes.payload;
-            }
-            if (checkJwtHeaderRes.query) {
-                if (checkJwtHeaderRes.query.useraddress) {
-                    userAddress = checkJwtHeaderRes.query.useraddress;
-                }
-                if (checkJwtHeaderRes.query.filename) {
-                    fileName = fileUtility.getFileName(checkJwtHeaderRes.query.filename);
-                }
-            }
-            processTrack(res, body, fileName, userAddress);
+        var body = null;
+        if (req.body.hasOwnProperty("token")) {
+            body = documentService.readToken(req.body.token);
         } else {
+            var checkJwtHeaderRes = documentService.checkJwtHeader(req);
+            if (checkJwtHeaderRes) {
+                var body;
+                if (checkJwtHeaderRes.payload) {
+                    body = checkJwtHeaderRes.payload;
+                }
+                if (checkJwtHeaderRes.query) {
+                    if (checkJwtHeaderRes.query.useraddress) {
+                        userAddress = checkJwtHeaderRes.query.useraddress;
+                    }
+                    if (checkJwtHeaderRes.query.filename) {
+                        fileName = fileUtility.getFileName(checkJwtHeaderRes.query.filename);
+                    }
+                }
+            }
+        }
+        if (body == null) {
             res.write("{\"error\":1}");
             res.end();
+            return;
         }
+        processTrack(res, body, fileName, userAddress);
         return;
     }
 
@@ -520,9 +532,14 @@ app.get("/editor", function (req, res) {
 
         var userAddress = docManager.curUserHostAddress();
         var fileName = fileUtility.getFileName(req.query.fileName);
+        if (!docManager.existsSync(docManager.storagePath(fileName, userAddress))) {
+            throw { 
+                "message": "File not found: " + fileName
+            };
+        }
         var key = docManager.getKey(fileName);
         var url = docManager.getFileUri(fileName);
-        var mode = req.query.mode || "edit"; //mode: view/edit/review/comment/embedded
+        var mode = req.query.mode || "edit"; //mode: view/edit/review/comment/fillForms/embedded
         var type = req.query.type || ""; //type: embedded/mobile/desktop
         if (type == "") {
                 type = new RegExp(configServer.get("mobileRegEx"), "i").test(req.get('User-Agent')) ? "mobile" : "desktop";
