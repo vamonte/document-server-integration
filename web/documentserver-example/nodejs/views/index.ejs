@@ -325,12 +325,12 @@
                                     <% } %>
 									<a href="editor?type=desktop&mode=comment&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
 										<img src="images/comment-24.png" alt="Open in editor for comment" title="Open in editor for comment" /></a>
-										
+                                    <% if (storedFiles[i].documentType == "text") { %>
                                     <a href="editor?type=desktop&mode=fillForms&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
                                         <img src="images/fill-forms-24.png" alt="Open in editor for filling in forms" title="Open in editor for filling in forms" /></a>
                                     <a href="editor?type=desktop&mode=blockcontent&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
                                         <img src="images/block-content-24.png" alt="Open in editor without content control modification" title="Open in editor without content control modification" /></a>
-                                </td>
+                                    <% } %>
                                 </td>
                                 <td class="contentCells contentCells-icon-2">
                                     <a href="editor?type=desktop&mode=view&fileName=<%= encodeURIComponent(storedFiles[i].name) + params %>" target="_blank">
