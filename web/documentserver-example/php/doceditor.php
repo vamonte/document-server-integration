@@ -90,11 +90,12 @@
                 "created" => date('d.m.y')
             ],
             "permissions" => [
-                "comment" => $editorsMode != "view" && $editorsMode != "fillForms" && $editorsMode != "embedded",
+                "comment" => $editorsMode != "view" && $editorsMode != "fillForms" && $editorsMode != "embedded" && $editorsMode != "blockcontent",
                 "download" => true,
-                "edit" => $canEdit && ($editorsMode == "edit" || $editorsMode == "filter"),
-                "fillForms" => $editorsMode != "view" && $editorsMode != "comment" && $editorsMode != "embedded",
+                "edit" => $canEdit && ($editorsMode == "edit" || $editorsMode == "filter" || $editorsMode == "blockcontent"),
+                "fillForms" => $editorsMode != "view" && $editorsMode != "comment" && $editorsMode != "embedded" && $editorsMode != "blockcontent",
                 "modifyFilter" => $editorsMode != "filter",
+                "modifyContentControl" => $editorsMode != "blockcontent",
                 "review" => $editorsMode == "edit" || $editorsMode == "review"
             ]
         ],
@@ -224,6 +225,9 @@
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, minimal-ui" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <link rel="icon" href="./favicon.ico" type="image/x-icon" />
     <title>ONLYOFFICE</title>
 
