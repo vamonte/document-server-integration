@@ -1,6 +1,6 @@
 ﻿/*
  *
- * (c) Copyright Ascensio System SIA 2019
+ * (c) Copyright Ascensio System SIA 2020
  *
  * The MIT License (MIT)
  *
@@ -101,14 +101,19 @@ namespace OnlineEditorsExample
 
             var ext = Path.GetExtension(FileName);
 
-            var editorsMode = Request["editorsMode"] ?? "edit";
+            var editorsMode = Request.GetOrDefault("editorsMode", "edit");
 
             var canEdit = _Default.EditedExts.Contains(ext);
             var mode = canEdit && editorsMode != "view" ? "edit" : "view";
 
+            var jss = new JavaScriptSerializer();
+
+            var actionLink = Request.GetOrDefault("actionLink", null);
+            var actionData = string.IsNullOrEmpty(actionLink) ? null : jss.DeserializeObject(actionLink);
+
             var config = new Dictionary<string, object>
                 {
-                    { "type", Request["editorsType"] ?? "desktop" },
+                    { "type", Request.GetOrDefault("editorsType", "desktop") },
                     { "documentType", _Default.DocumentType(FileName) },
                     {
                         "document", new Dictionary<string, object>
@@ -141,14 +146,15 @@ namespace OnlineEditorsExample
                     {
                         "editorConfig", new Dictionary<string, object>
                             {
+                                { "actionLink", actionData },
                                 { "mode", mode },
-                                { "lang", Request.Cookies["ulang"]?.Value ?? "en" },
+                                { "lang", Request.Cookies.GetOrDefault("ulang", "en") },
                                 { "callbackUrl", CallbackUrl },
                                 {
                                     "user", new Dictionary<string, object>
                                         {
-                                            { "id", Request.Cookies["uid"]?.Value ?? "uid-1" },
-                                            { "name", Request.Cookies["uname"]?.Value ?? "John Smith" }
+                                            { "id", Request.Cookies.GetOrDefault("uid", "uid-1") },
+                                            { "name", Request.Cookies.GetOrDefault("uname", "John Smith") }
                                         }
                                 },
                                 {
@@ -183,13 +189,13 @@ namespace OnlineEditorsExample
                 config.Add("token", token);
             }
 
-            var jss = new JavaScriptSerializer();
-
             DocConfig = jss.Serialize(config);
 
             try
             {
-                GetHistory(out var hist, out var histData);
+                Dictionary<string, object> hist;
+                Dictionary<string, object> histData;
+                GetHistory(out hist, out histData);
                 if (hist != null && histData != null)
                 {
                     History = jss.Serialize(hist);
@@ -305,8 +311,8 @@ namespace OnlineEditorsExample
             Directory.CreateDirectory(histDir);
             File.WriteAllText(Path.Combine(histDir, "createdInfo.json"), new JavaScriptSerializer().Serialize(new Dictionary<string, object> {
                 { "created", DateTime.Now.ToString() },
-                { "id", request.Cookies["uid"]?.Value ?? "uid-1" },
-                { "name", request.Cookies["uname"]?.Value ?? "John Smith" }
+                { "id", request.Cookies.GetOrDefault("uid", "uid-1") },
+                { "name", request.Cookies.GetOrDefault("uname", "John Smith") }
             }));
         }
     }

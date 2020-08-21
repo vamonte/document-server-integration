@@ -1,6 +1,6 @@
 /*
  *
- * (c) Copyright Ascensio System SIA 2019
+ * (c) Copyright Ascensio System SIA 2020
  *
  * The MIT License (MIT)
  *
@@ -69,7 +69,7 @@ public class EditorServlet extends HttpServlet
             }
         }
 
-        FileModel file = new FileModel(fileName, cm.getCookie("ulang"), cm.getCookie("uid"), cm.getCookie("uname"));
+        FileModel file = new FileModel(fileName, cm.getCookie("ulang"), cm.getCookie("uid"), cm.getCookie("uname"), request.getParameter("actionLink"));
         file.changeType(request.getParameter("mode"), request.getParameter("type"));
 
         if (DocumentManager.TokenEnabled())
