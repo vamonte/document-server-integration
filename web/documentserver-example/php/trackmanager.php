@@ -74,6 +74,7 @@ function processSave($data, $fileName, $userAddress) {
 
     $curExt = strtolower('.' . pathinfo($fileName, PATHINFO_EXTENSION));
     $downloadExt = strtolower('.' . pathinfo($downloadUri, PATHINFO_EXTENSION));
+    $newFileName = $fileName;
 
     if ($downloadExt != $curExt) {
         $key = GenerateRevisionId($downloadUri);
@@ -82,29 +83,30 @@ function processSave($data, $fileName, $userAddress) {
             sendlog("   Convert " . $downloadUri . " from " . $downloadExt . " to " . $curExt, "webedior-ajax.log");
             $convertedUri;
             $percent = GetConvertedUri($downloadUri, $downloadExt, $curExt, $key, FALSE, $convertedUri);
+            if (!empty($convertedUri)) {
+                $downloadUri = $convertedUri;
+            } else {
+                sendlog("   Convert after save convertedUri is empty", "webedior-ajax.log");
+                $baseNameWithoutExt = substr($fileName, 0, strlen($fileName) - strlen($curExt) - 1);
+                $newFileName = GetCorrectName($baseNameWithoutExt . "." . $downloadExt);
+            }
         } catch (Exception $e) {
             sendlog("   Convert after save ".$e->getMessage(), "webedior-ajax.log");
-        }
-
-        if (!empty($convertedUri)) {
-            $downloadUri = $convertedUri;
-        } else {
-            sendlog("   Convert after save convertedUri is empty", "webedior-ajax.log");
             $baseNameWithoutExt = substr($fileName, 0, strlen($fileName) - strlen($curExt) - 1);
-            $fileName = GetCorrectName($baseNameWithoutExt . "." . $downloadExt);
+            $newFileName = GetCorrectName($baseNameWithoutExt . "." . $downloadExt);
         }
     }
 
     $saved = 1;
 
     if (!(($new_data = file_get_contents($downloadUri)) === FALSE)) {
-        $storagePath = getStoragePath($fileName, $userAddress);
+        $storagePath = getStoragePath($newFileName, $userAddress);
         $histDir = getHistoryDir($storagePath);
         $verDir = getVersionDir($histDir, getFileVersion($histDir));
 
         mkdir($verDir);
 
-        copy($storagePath, $verDir . DIRECTORY_SEPARATOR . "prev" . $downloadExt);
+        copy(getStoragePath($fileName, $userAddress), $verDir . DIRECTORY_SEPARATOR . "prev" . $curExt);
         file_put_contents($storagePath, $new_data, LOCK_EX);
 
         if ($changesData = file_get_contents($data["changesurl"])) {
@@ -120,7 +122,7 @@ function processSave($data, $fileName, $userAddress) {
         }
         file_put_contents($verDir . DIRECTORY_SEPARATOR . "key.txt", $data["key"], LOCK_EX);
 
-        $forcesavePath = getForcesavePath($fileName, $userAddress, false);
+        $forcesavePath = getForcesavePath($newFileName, $userAddress, false);
         if ($forcesavePath != "") {
             unlink($forcesavePath);
         }
@@ -139,17 +141,10 @@ function processForceSave($data, $fileName, $userAddress) {
     $curExt = strtolower('.' . pathinfo($fileName, PATHINFO_EXTENSION));
     $downloadExt = strtolower('.' . pathinfo($downloadUri, PATHINFO_EXTENSION));
 
-    if ($downloadExt != $curExt) {
-        $key = GenerateRevisionId($downloadUri);
-
-        try {
-            sendlog("   Convert " . $downloadUri . " from " . $downloadExt . " to " . $curExt, "webedior-ajax.log");
-            $convertedUri;
-            $percent = GetConvertedUri($downloadUri, $downloadExt, $curExt, $key, FALSE, $convertedUri);
-        } catch (Exception $e) {
-            sendlog("   Convert after save ".$e->getMessage(), "webedior-ajax.log");
-        }
-
+    try {
+        sendlog("   Convert " . $downloadUri . " from " . $downloadExt . " to " . $curExt, "webedior-ajax.log");
+        $convertedUri;
+        $percent = GetConvertedUri($downloadUri, $downloadExt, $curExt, $key, FALSE, $convertedUri);
         if (!empty($convertedUri)) {
             $downloadUri = $convertedUri;
         } else {
@@ -157,6 +152,10 @@ function processForceSave($data, $fileName, $userAddress) {
             $baseNameWithoutExt = substr($fileName, 0, strlen($fileName) - strlen($curExt) - 1);
             $fileName = GetCorrectName($baseNameWithoutExt . "." . $downloadExt);
         }
+    } catch (Exception $e) {
+        sendlog("   Convert after save ".$e->getMessage(), "webedior-ajax.log");
+        $baseNameWithoutExt = substr($fileName, 0, strlen($fileName) - strlen($curExt) - 1);
+        $fileName = GetCorrectName($baseNameWithoutExt . "." . $downloadExt);
     }
 
     $saved = 1;
