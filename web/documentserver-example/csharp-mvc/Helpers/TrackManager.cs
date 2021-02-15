@@ -87,30 +87,38 @@ namespace OnlineEditorsExampleMVC.Helpers
         {
             var downloadUri = (string)fileData["url"];
             string curExt = Path.GetExtension(fileName);
-            string downloadExt = Path.GetExtension(downloadUri);
+            string downloadExt = Path.GetExtension(downloadUri) ?? "";
+            var newFileName = fileName;
 
-            if (!curExt.Equals(downloadExt))
+            if (!curExt.Equals(downloadExt, StringComparison.InvariantCultureIgnoreCase))
             {
-                string newFileUri;
-                var result = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), false, out newFileUri);
-                if (string.IsNullOrEmpty(newFileUri))
+                try
                 {
-                    fileName = DocManagerHelper.GetCorrectName(Path.GetFileNameWithoutExtension(fileName) + "." + downloadExt);
-                }
-                else
+                    string newFileUri;
+                    var result = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), false, out newFileUri);
+                    if (string.IsNullOrEmpty(newFileUri))
+                    {
+                        newFileName = DocManagerHelper.GetCorrectName(Path.GetFileNameWithoutExtension(fileName) + "." + downloadExt);
+                    }
+                    else 
+                    {
+                        downloadUri = newFileUri;
+                    }
+                } 
+                catch (Exception)
                 {
-                    downloadUri = newFileUri;
+                    newFileName = DocManagerHelper.GetCorrectName(Path.GetFileNameWithoutExtension(fileName) + "." + downloadExt);
                 }
             }
 
-            var storagePath = DocManagerHelper.StoragePath(fileName, userAddress);
+            var storagePath = DocManagerHelper.StoragePath(newFileName, userAddress);
             var histDir = DocManagerHelper.HistoryDir(storagePath);
             if (!Directory.Exists(histDir)) Directory.CreateDirectory(histDir);
 
             var versionDir = DocManagerHelper.VersionDir(histDir, DocManagerHelper.GetFileVersion(histDir));
             if (!Directory.Exists(versionDir)) Directory.CreateDirectory(versionDir);
 
-            File.Copy(storagePath, Path.Combine(versionDir, "prev" + Path.GetExtension(fileName)));
+            File.Copy(DocManagerHelper.StoragePath(fileName, userAddress), Path.Combine(versionDir, "prev" + curExt));
 
             DownloadToFile(downloadUri, storagePath);
             DownloadToFile((string)fileData["changesurl"], Path.Combine(versionDir, "diff.zip"));
@@ -129,7 +137,7 @@ namespace OnlineEditorsExampleMVC.Helpers
 
             File.WriteAllText(Path.Combine(versionDir, "key.txt"), (string)fileData["key"]);
 
-            string forcesavePath = DocManagerHelper.ForcesavePath(fileName, userAddress, false);
+            string forcesavePath = DocManagerHelper.ForcesavePath(newFileName, userAddress, false);
             if (!forcesavePath.Equals(""))
             {
                 File.Delete(forcesavePath);
@@ -147,15 +155,22 @@ namespace OnlineEditorsExampleMVC.Helpers
 
             if (!curExt.Equals(downloadExt))
             {
-                string newFileUri;
-                var result = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), false, out newFileUri);
-                if (string.IsNullOrEmpty(newFileUri))
+                try
+                {
+                    string newFileUri;
+                    var result = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), false, out newFileUri);
+                    if (string.IsNullOrEmpty(newFileUri))
+                    {
+                        fileName = DocManagerHelper.GetCorrectName(Path.GetFileNameWithoutExtension(fileName) + "." + downloadExt);
+                    }
+                    else 
+                    {
+                        downloadUri = newFileUri;
+                    }
+                } 
+                catch (Exception)
                 {
                     fileName = DocManagerHelper.GetCorrectName(Path.GetFileNameWithoutExtension(fileName) + "." + downloadExt);
-                }
-                else
-                {
-                    downloadUri = newFileUri;
                 }
             }
 
