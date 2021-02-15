@@ -60,6 +60,7 @@ class TrackHelper
 
         def process_save(file_data, file_name, user_address)
             download_uri = file_data['url']
+            new_file_name = file_name
 
             cur_ext = File.extname(file_name)
             download_ext = File.extname(download_uri)
@@ -69,25 +70,25 @@ class TrackHelper
                 begin
                     percent, new_file_uri = ServiceConverter.get_converted_uri(download_uri, download_ext.delete('.'), cur_ext.delete('.'), key, false)
                     if (new_file_uri == nil || new_file_uri.empty?)
-                        file_name = DocumentHelper.get_correct_name(File.basename(file_name, extension) + download_ext)
+                        new_file_name = DocumentHelper.get_correct_name(File.basename(file_name, extension) + download_ext)
                     else
                         download_uri = new_file_uri
                     end
                 rescue StandardError => msg
-                    file_name = DocumentHelper.get_correct_name(File.basename(file_name, extension) + download_ext)
+                    new_file_name = DocumentHelper.get_correct_name(File.basename(file_name, extension) + download_ext)
                 end
             end
 
             saved = 1
             begin
-                storage_path = DocumentHelper.storage_path(file_name, user_address)
+                storage_path = DocumentHelper.storage_path(new_file_name, user_address)
 
                 hist_dir = DocumentHelper.history_dir(storage_path)
                 ver_dir = DocumentHelper.version_dir(hist_dir, DocumentHelper.get_file_version(hist_dir))
 
                 FileUtils.mkdir_p(ver_dir)
 
-                FileUtils.move(storage_path, File.join(ver_dir, "prev#{File.extname(file_name)}"))
+                FileUtils.move(DocumentHelper.storage_path(file_name, user_address), File.join(ver_dir, "prev#{cur_ext}"))
                 save_from_uri(storage_path, download_uri)
 
                 if (file_data["changesurl"])
@@ -108,7 +109,7 @@ class TrackHelper
                     file.write(file_data["key"])
                 end
 
-                forcesave_path = DocumentHelper.forcesave_path(file_name, user_address, false)
+                forcesave_path = DocumentHelper.forcesave_path(new_file_name, user_address, false)
                 if (!forcesave_path.eql?(""))
                     File.delete(forcesave_path)
                 end
