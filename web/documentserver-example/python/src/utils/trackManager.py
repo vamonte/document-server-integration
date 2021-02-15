@@ -51,10 +51,9 @@ def readBody(request):
     return body
 
 def processSave(body, filename, usAddr, request):
-    path = docManager.getStoragePath(filename, usAddr)
-
     download = body.get('url')
     changesUri = body.get('changesurl')
+    newFilename = filename
 
     curExt = fileUtils.getFileExt(filename)
     downloadExt = fileUtils.getFileExt(download)
@@ -62,9 +61,11 @@ def processSave(body, filename, usAddr, request):
     if (curExt != downloadExt):
         newUri = serviceConverter.getConverterUri(download, downloadExt, curExt, docManager.generateRevisionId(download), False)
         if not newUri:
-            filename = docManager.getCorrectName(fileUtils.getFileNameWithoutExt(filename) + downloadExt, request)
+            newFilename = docManager.getCorrectName(fileUtils.getFileNameWithoutExt(filename) + downloadExt, request)
         else:
             download = newUri
+
+    path = docManager.getStoragePath(newFilename, usAddr)
 
     histDir = historyManager.getHistoryDir(path)
     if not os.path.exists(histDir):
@@ -72,7 +73,7 @@ def processSave(body, filename, usAddr, request):
 
     versionDir = historyManager.getNextVersionDir(histDir)
 
-    os.rename(path, historyManager.getPrevFilePath(versionDir, fileUtils.getFileExt(filename)))
+    os.rename(docManager.getStoragePath(filename, usAddr), historyManager.getPrevFilePath(versionDir, curExt))
     docManager.saveFileFromUri(download, path)
     docManager.saveFileFromUri(changesUri, historyManager.getChangesZipPath(versionDir))
 
@@ -85,7 +86,7 @@ def processSave(body, filename, usAddr, request):
 
     historyManager.writeFile(historyManager.getKeyPath(versionDir), body.get('key'))
 
-    forcesavePath = docManager.getForcesavePath(filename, request, False)
+    forcesavePath = docManager.getForcesavePath(newFilename, request, False)
     if (forcesavePath != ""):
        os.remove(forcesavePath)
 
