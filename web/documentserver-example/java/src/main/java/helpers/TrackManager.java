@@ -112,34 +112,39 @@ public class TrackManager {
     }
 
     public static void processSave(JSONObject body, String fileName, String userAddress) throws Exception {
-        String storagePath = DocumentManager.StoragePath(fileName, userAddress);
-
         String downloadUri = (String) body.get("url");
         String changesUri = (String) body.get("changesurl");
         String key = (String) body.get("key");
+        String newFileName = fileName;
 
         String curExt = FileUtility.GetFileExtension(fileName);
         String downloadExt = FileUtility.GetFileExtension(downloadUri);
 
         if (!curExt.equals(downloadExt)) {
-            String newFileUri = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), false);
-            if (newFileUri.isEmpty()) {
-                fileName = DocumentManager.GetCorrectName(FileUtility.GetFileNameWithoutExtension(fileName) + downloadExt);
-            } else {
-                downloadUri = newFileUri;
+            try {
+                String newFileUri = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), false);
+                if (newFileUri.isEmpty()) {
+                    newFileName = DocumentManager.GetCorrectName(FileUtility.GetFileNameWithoutExtension(fileName) + downloadExt);
+                } else {
+                    downloadUri = newFileUri;
+                }
+            } catch (Exception e){
+                newFileName = DocumentManager.GetCorrectName(FileUtility.GetFileNameWithoutExtension(fileName) + downloadExt);
             }
         }
 
+        String storagePath = DocumentManager.StoragePath(newFileName, userAddress);
         File histDir = new File(DocumentManager.HistoryDir(storagePath));
         if (!histDir.exists()) histDir.mkdirs();
 
         String versionDir = DocumentManager.VersionDir(histDir.getAbsolutePath(), DocumentManager.GetFileVersion(histDir.getAbsolutePath()));
         File ver = new File(versionDir);
+        File lastVersion = new File(DocumentManager.StoragePath(fileName, userAddress));
         File toSave = new File(storagePath);
 
         if (!ver.exists()) ver.mkdirs();
 
-        toSave.renameTo(new File(versionDir + File.separator + "prev" + FileUtility.GetFileExtension(fileName)));
+        lastVersion.renameTo(new File(versionDir + File.separator + "prev" + curExt));
 
         downloadToFile(downloadUri, toSave);
         downloadToFile(changesUri, new File(versionDir + File.separator + "diff.zip"));
@@ -158,8 +163,8 @@ public class TrackManager {
         fw.write(key);
         fw.close();
 
-        String forcesavePath = DocumentManager.ForcesavePath(fileName, userAddress, false);
-        if (forcesavePath != "") {
+        String forcesavePath = DocumentManager.ForcesavePath(newFileName, userAddress, false);
+        if (!forcesavePath.equals("")) {
             File forceSaveFile = new File(forcesavePath);
             forceSaveFile.delete();
         }
@@ -173,11 +178,15 @@ public class TrackManager {
         String downloadExt = FileUtility.GetFileExtension(downloadUri);
 
         if (!curExt.equals(downloadExt)) {
-            String newFileUri = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), false);
-            if (newFileUri.isEmpty()) {
+            try {
+                String newFileUri = ServiceConverter.GetConvertedUri(downloadUri, downloadExt, curExt, ServiceConverter.GenerateRevisionId(downloadUri), false);
+                if (newFileUri.isEmpty()) {
+                    fileName = DocumentManager.GetCorrectName(FileUtility.GetFileNameWithoutExtension(fileName) + downloadExt);
+                } else {
+                    downloadUri = newFileUri;
+                }
+            } catch (Exception e){
                 fileName = DocumentManager.GetCorrectName(FileUtility.GetFileNameWithoutExtension(fileName) + downloadExt);
-            } else {
-                downloadUri = newFileUri;
             }
         }
 
